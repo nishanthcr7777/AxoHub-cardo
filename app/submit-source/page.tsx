@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion"
 import { Sidebar } from "@/components/sidebar"
-import { WalletConnect } from "@/components/wallet-connect"
 import { SubmitSourceForm } from "@/components/submit-source-form"
 
 export default function SubmitSourcePage() {
@@ -27,10 +26,9 @@ export default function SubmitSourcePage() {
               transition={{ delay: 0.1 }}
               className="text-slate-400 mt-1"
             >
-              Upload and verify your smart contract source code on Sepolia
+              Upload and verify your smart contract source code
             </motion.p>
           </div>
-          <WalletConnect />
         </header>
 
         {/* Main content */}

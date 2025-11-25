@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion"
 import { Sidebar } from "@/components/sidebar"
-import { WalletConnect } from "@/components/wallet-connect"
 import { Card } from "@/components/ui/card"
 
 export default function ProfilePage() {
@@ -30,7 +29,6 @@ export default function ProfilePage() {
               Manage your developer profile and contributions
             </motion.p>
           </div>
-          <WalletConnect />
         </header>
 
         {/* Main content */}

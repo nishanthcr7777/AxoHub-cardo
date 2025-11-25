@@ -11,12 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { CodeEditor } from "@/components/code-editor"
 import { ProgressBar } from "@/components/progress-bar"
 import { SuccessModal } from "@/components/success-modal"
-import { useWallet } from "@/hooks/use-wallet"
-import { wagmiConfig } from "@/lib/web3modal"
-import { sourceRegistryAbi } from "@/lib/abis/source-registry"
-import { SOURCE_REGISTRY_ADDRESSES } from "@/lib/contracts/source-registry"
 import { useToast } from "@/hooks/use-toast"
-import { writeContract, waitForTransactionReceipt } from "wagmi/actions"
 import { ClientOnly } from "@/components/client-only"
 import { ipfsMock } from "@/lib/ipfs-mock"
 
@@ -25,7 +20,7 @@ const steps = [
   { id: 2, title: "Version & Compiler", description: "Specify version and compiler settings" },
   { id: 3, title: "License", description: "Choose your contract license" },
   { id: 4, title: "Source Code", description: "Upload your contract source code" },
-  { id: 5, title: "Review & Submit", description: "Review and submit to blockchain" },
+  { id: 5, title: "Review & Submit", description: "Review and submit" },
 ]
 
 const compilers = ["solc-0.8.19", "solc-0.8.18", "solc-0.8.17", "solc-0.8.16", "solc-0.8.15"]
@@ -43,9 +38,7 @@ function SubmitSourceFormInner() {
     license: "",
     sourceCode: "",
   })
-  const { isConnected, chainId, isWrongNetwork, switchToSepolia, isSwitchingNetwork } = useWallet()
   const { toast } = useToast()
-  const [txHash, setTxHash] = useState<`0x${string}` | null>(null)
 
   const progress = (currentStep / steps.length) * 100
 
@@ -62,28 +55,10 @@ function SubmitSourceFormInner() {
   }
 
   const handleSubmit = async () => {
-    console.log("[v0] handleSubmit started", { isConnected, chainId, isWrongNetwork })
+    console.log("[AxoHub] handleSubmit started")
 
-    if (!isConnected) {
-      console.log("[v0] Wallet not connected")
-      toast({
-        title: "Wallet not connected",
-        description: "Please connect your wallet to submit.",
-        variant: "destructive",
-      })
-      return
-    }
-    if (isWrongNetwork) {
-      console.log("[v0] Wrong network", { chainId })
-      toast({
-        title: "Wrong network",
-        description: "Please switch to Sepolia before submitting.",
-        variant: "destructive",
-      })
-      return
-    }
     if (!formData.name || !formData.version || !formData.compiler || !formData.license || !formData.sourceCode) {
-      console.log("[v0] Missing fields", formData)
+      console.log("[AxoHub] Missing fields", formData)
       toast({
         title: "Missing fields",
         description: "Please complete all steps before submitting.",
@@ -91,63 +66,46 @@ function SubmitSourceFormInner() {
       })
       return
     }
-    const address = SOURCE_REGISTRY_ADDRESSES[chainId]
-    if (!address) {
-      console.log("[v0] Unsupported network", { chainId })
-      toast({
-        title: "Unsupported network",
-        description: "Please switch to Sepolia to submit sources.",
-        variant: "destructive",
-      })
-      return
-    }
 
-    console.log("[v0] Starting transaction with address:", address)
+    console.log("[AxoHub] Starting submission...")
     setIsSubmitting(true)
-    setTxHash(null)
 
     try {
-      // NOTE: Replace this placeholder with a real IPFS CID once integrated.
+      // Store source code in IPFS mock
       const normalizedSource = (formData.sourceCode || "").trim()
       if (!normalizedSource) {
         throw new Error("Source code is required")
       }
 
-      console.log("[v0] Uploading source to IPFS mock...")
+      console.log("[AxoHub] Uploading source to IPFS mock...")
       const ipfsCID = await ipfsMock.putText(normalizedSource)
-      console.log("[v0] Generated IPFS CID:", ipfsCID)
+      console.log("[AxoHub] Generated IPFS CID:", ipfsCID)
 
-      console.log("[v0] Calling writeContract with args:", [
-        formData.name,
-        formData.version,
-        formData.compiler,
-        formData.license,
+      // Simulate submission delay
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+
+      console.log("[AxoHub] Submission data:", {
+        name: formData.name,
+        version: formData.version,
+        compiler: formData.compiler,
+        license: formData.license,
         ipfsCID,
-      ])
-
-      const hash = await writeContract(wagmiConfig, {
-        abi: sourceRegistryAbi,
-        address,
-        functionName: "submitSource",
-        args: [formData.name, formData.version, formData.compiler, formData.license, ipfsCID],
       })
-      console.log("[v0] Transaction hash:", hash)
-      setTxHash(hash)
-
-      console.log("[v0] Waiting for transaction receipt...")
-      const receipt = await waitForTransactionReceipt(wagmiConfig, { hash })
-      console.log("[v0] Transaction confirmed:", receipt)
 
       setIsSubmitting(false)
       setShowSuccess(true)
-      console.log("[v0] Submit source completed successfully")
+      console.log("[AxoHub] Submit source completed successfully")
+
+      toast({
+        title: "Source submitted!",
+        description: "Your source code has been stored successfully.",
+      })
     } catch (err: any) {
-      console.error("[v0] submitSource error:", err?.message || err)
-      console.error("[v0] Full error object:", err)
+      console.error("[AxoHub] submitSource error:", err?.message || err)
       setIsSubmitting(false)
       toast({
-        title: "Transaction failed",
-        description: err?.shortMessage || err?.message || "Please try again.",
+        title: "Submission failed",
+        description: err?.message || "Please try again.",
         variant: "destructive",
       })
     }
@@ -168,20 +126,18 @@ function SubmitSourceFormInner() {
           {steps.map((step, index) => (
             <div key={step.id} className="flex items-center">
               <motion.div
-                className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 ${
-                  step.id <= currentStep
+                className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 ${step.id <= currentStep
                     ? "bg-gradient-to-r from-purple-500 to-cyan-500 text-white shadow-lg shadow-purple-500/25"
                     : "bg-slate-700 text-slate-400 border border-slate-600"
-                }`}
+                  }`}
                 whileHover={{ scale: 1.05 }}
               >
                 {step.id < currentStep ? "✓" : step.id}
               </motion.div>
               {index < steps.length - 1 && (
                 <div
-                  className={`w-16 h-0.5 mx-2 transition-all duration-300 ${
-                    step.id < currentStep ? "bg-gradient-to-r from-purple-500 to-cyan-500" : "bg-slate-700"
-                  }`}
+                  className={`w-16 h-0.5 mx-2 transition-all duration-300 ${step.id < currentStep ? "bg-gradient-to-r from-purple-500 to-cyan-500" : "bg-slate-700"
+                    }`}
                 />
               )}
             </div>
@@ -190,23 +146,6 @@ function SubmitSourceFormInner() {
 
         {/* Form card */}
         <Card className="p-8 bg-black/20 backdrop-blur-sm border-white/10 hover:border-purple-500/30 transition-all duration-300">
-          {isWrongNetwork && (
-            <div className="mb-4 flex items-center justify-between rounded-md border border-red-500/40 bg-red-500/10 p-3">
-              <div className="text-sm text-red-200">
-                You are connected to the wrong network. Please switch to Sepolia.
-              </div>
-              <Button
-                onClick={switchToSepolia}
-                variant="outline"
-                size="sm"
-                className="border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/10 bg-transparent"
-                disabled={isSwitchingNetwork}
-              >
-                {isSwitchingNetwork ? "Switching…" : "Switch to Sepolia"}
-              </Button>
-            </div>
-          )}
-
           <AnimatePresence mode="wait">
             <motion.div
               key={currentStep}
@@ -368,7 +307,7 @@ function SubmitSourceFormInner() {
             ) : (
               <Button
                 onClick={handleSubmit}
-                disabled={isSubmitting || isWrongNetwork}
+                disabled={isSubmitting}
                 className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white min-w-[120px]"
               >
                 {isSubmitting ? (
@@ -378,7 +317,7 @@ function SubmitSourceFormInner() {
                     className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
                   />
                 ) : (
-                  "Submit to Blockchain"
+                  "Submit Source"
                 )}
               </Button>
             )}
@@ -390,14 +329,7 @@ function SubmitSourceFormInner() {
         isOpen={showSuccess}
         onClose={() => setShowSuccess(false)}
         title="Source Code Submitted Successfully!"
-        description="Your contract source code has been submitted on-chain."
-        explorerLink={
-          txHash
-            ? chainId === 11155111
-              ? `https://sepolia.etherscan.io/tx/${txHash}`
-              : `https://etherscan.io/tx/${txHash}`
-            : undefined
-        }
+        description="Your contract source code has been stored."
       />
     </>
   )

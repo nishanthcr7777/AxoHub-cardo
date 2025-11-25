@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion"
 import { Sidebar } from "@/components/sidebar"
-import { WalletConnect } from "@/components/wallet-connect"
 import { PublishPackageForm } from "@/components/publish-package-form"
 
 export default function PublishPackagePage() {
@@ -30,7 +29,6 @@ export default function PublishPackagePage() {
               Create a reusable package from your deployed smart contract
             </motion.p>
           </div>
-          <WalletConnect />
         </header>
 
         {/* Main content */}

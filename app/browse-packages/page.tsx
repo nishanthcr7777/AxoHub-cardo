@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion"
 import { Sidebar } from "@/components/sidebar"
-import { WalletConnect } from "@/components/wallet-connect"
 import { PackagesCards } from "@/components/packages-cards"
 import { SearchFilters } from "@/components/search-filters"
 import { FilterProvider } from "@/contexts/filter-context"
@@ -30,10 +29,9 @@ export default function BrowsePackagesPage() {
                 transition={{ delay: 0.1 }}
                 className="text-slate-400 mt-1"
               >
-                Discover and interact with smart contract packages on SepoliaETH
+                Discover and manage smart contract packages
               </motion.p>
             </div>
-            <WalletConnect />
           </header>
 
           {/* Main content */}

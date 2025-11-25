@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion"
 import { Sidebar } from "@/components/sidebar"
-import { WalletConnect } from "@/components/wallet-connect"
 import { TypingHeader } from "@/components/typing-header"
 
 export default function HomePage() {
@@ -11,10 +10,9 @@ export default function HomePage() {
       <Sidebar />
 
       <div className="ml-64 min-h-screen">
-        {/* Header with wallet connection */}
+        {/* Header */}
         <header className="flex items-center justify-between p-6 border-b border-white/10 backdrop-blur-sm bg-white/5">
           <div className="flex-1" />
-          <WalletConnect />
         </header>
 
         {/* Main content */}
@@ -33,7 +31,7 @@ export default function HomePage() {
               transition={{ delay: 2, duration: 1 }}
               className="text-xl text-slate-300 mb-12 max-w-2xl mx-auto"
             >
-              Deploy, discover, and interact with smart contracts on the Somnia blockchain. The ultimate developer
+              Publish, discover, and manage smart contract packages and source code. The ultimate developer
               platform for decentralized applications.
             </motion.p>
 

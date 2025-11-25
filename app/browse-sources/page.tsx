@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion"
 import { Sidebar } from "@/components/sidebar"
-import { WalletConnect } from "@/components/wallet-connect"
 import { SourcesTable } from "@/components/sources-table"
 import { SearchFilters } from "@/components/search-filters"
 import { FilterProvider } from "@/contexts/filter-context"
@@ -30,10 +29,9 @@ export default function BrowseSourcesPage() {
                 transition={{ delay: 0.1 }}
                 className="text-slate-400 mt-1"
               >
-                Explore verified smart contract source code on SepoliaETH
+                Explore verified smart contract source code
               </motion.p>
             </div>
-            <WalletConnect />
           </header>
 
           {/* Main content */}
