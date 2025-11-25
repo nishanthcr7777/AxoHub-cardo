@@ -5,6 +5,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { WalletConnectButton } from "@/components/wallet-connect-button"
 
 const menuItems = [
   { href: "/", label: "Dashboard", icon: "🏠" },
@@ -105,14 +106,12 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Bottom decoration */}
-      <div className="absolute bottom-6 left-6 right-6">
-        <div className="h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent" />
-        <motion.div
-          animate={{ x: [-100, 100] }}
-          transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-          className="h-px w-20 bg-gradient-to-r from-purple-500 to-cyan-500 mt-1"
-        />
+      {/* Wallet Connection */}
+      <div className="absolute bottom-6 left-4 right-4">
+        <div className="mb-4">
+          <div className="h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent" />
+        </div>
+        <WalletConnectButton />
       </div>
     </motion.div>
   )

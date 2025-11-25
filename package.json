@@ -9,8 +9,11 @@
     "start": "next start"
   },
   "dependencies": {
+    "@cardano-foundation/cardano-connect-with-wallet": "^0.2.15",
     "@emotion/is-prop-valid": "latest",
     "@hookform/resolvers": "^3.10.0",
+    "@meshsdk/core": "^1.9.0-beta.87",
+    "@meshsdk/react": "^1.9.0-beta.87",
     "@radix-ui/react-accordion": "latest",
     "@radix-ui/react-alert-dialog": "latest",
     "@radix-ui/react-aspect-ratio": "latest",
@@ -49,6 +52,7 @@
     "framer-motion": "latest",
     "geist": "latest",
     "input-otp": "latest",
+    "lucid-cardano": "^0.10.11",
     "lucide-react": "^0.454.0",
     "next": "14.2.16",
     "next-themes": "latest",
@@ -58,7 +62,7 @@
     "react-hook-form": "latest",
     "react-resizable-panels": "latest",
     "recharts": "latest",
-    "sonner": "latest",
+    "sonner": "^2.0.7",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "latest",
