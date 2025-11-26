@@ -40,17 +40,18 @@ export async function uploadToIPFS(file: File): Promise<string> {
                 maxBodyLength: Infinity,
                 headers: {
                     "Content-Type": `multipart/form-data`,
-                    pinata_api_key: PINATA_API_KEY,
-                    pinata_secret_api_key: PINATA_SECRET_KEY,
+                    "Authorization": `Bearer ${PINATA_API_KEY}`,
                 },
             }
         )
 
         const cid = response.data.IpfsHash
         return `ipfs://${cid}`
-    } catch (error) {
+    } catch (error: any) {
         console.error("IPFS upload error:", error)
-        throw new Error("Failed to upload file to IPFS")
+        console.error("Error details:", error.response?.data)
+        const errorMsg = error.response?.data?.error?.details || error.response?.data?.error || error.response?.data || "Failed to upload file to IPFS"
+        throw new Error(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg))
     }
 }
 
@@ -71,17 +72,17 @@ export async function uploadJSONToIPFS(json: object): Promise<string> {
             {
                 headers: {
                     "Content-Type": "application/json",
-                    pinata_api_key: PINATA_API_KEY,
-                    pinata_secret_api_key: PINATA_SECRET_KEY,
+                    "Authorization": `Bearer ${PINATA_API_KEY}`,
                 },
             }
         )
 
         const cid = response.data.IpfsHash
         return `ipfs://${cid}`
-    } catch (error) {
+    } catch (error: any) {
         console.error("IPFS JSON upload error:", error)
-        throw new Error("Failed to upload JSON to IPFS")
+        console.error("Error details:", error.response?.data)
+        throw new Error(error.response?.data?.error || "Failed to upload JSON to IPFS")
     }
 }
 
@@ -112,8 +113,7 @@ export async function testIPFSConnection(): Promise<boolean> {
             "https://api.pinata.cloud/data/testAuthentication",
             {
                 headers: {
-                    pinata_api_key: PINATA_API_KEY,
-                    pinata_secret_api_key: PINATA_SECRET_KEY,
+                    "Authorization": `Bearer ${PINATA_API_KEY}`,
                 },
             }
         )
