@@ -10,7 +10,9 @@ import { WalletConnectButton } from "@/components/wallet-connect-button"
 const menuItems = [
   { href: "/", label: "Dashboard", icon: "🏠" },
   { href: "/submit-source", label: "Submit Source", icon: "📂" },
+  { href: "/publish-contract", label: "Publish Contract", icon: "📄" },
   { href: "/publish-package", label: "Publish Package", icon: "📦" },
+  { href: "/version-history", label: "Version History", icon: "📜" },
   { href: "/browse-sources", label: "Browse Sources", icon: "🔍" },
   { href: "/browse-packages", label: "Browse Packages", icon: "🔗" },
   { href: "/profile", label: "Profile", icon: "👤" },
