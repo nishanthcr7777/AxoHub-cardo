@@ -1,89 +1,57 @@
 /**
- * IPFS Integration using Pinata
- * Phase 1: Core file and JSON upload
+ * Mock IPFS for Demo/Testing
+ * Generates realistic CIDs for hackathon presentation
+ * Switch to real IPFS when network allows
  */
 
-import axios from "axios"
-
-const PINATA_API_KEY = process.env.NEXT_PUBLIC_PINATA_API_KEY
-const PINATA_SECRET_KEY = process.env.NEXT_PUBLIC_PINATA_SECRET_KEY
-const PINATA_GATEWAY = "https://gateway.pinata.cloud/ipfs/"
+/**
+ * Generate a realistic IPFS CID (v1)
+ */
+function generateRealisticCID(): string {
+    const chars = 'abcdefghijklmnopqrstuvwxyz234567'
+    let cid = 'bafybei'
+    for (let i = 0; i < 52; i++) {
+        cid += chars[Math.floor(Math.random() * chars.length)]
+    }
+    return cid
+}
 
 /**
- * Upload a file to IPFS via Pinata
+ * Upload file to IPFS (MOCK - for demo purposes)
  * @param file - File object to upload
  * @returns IPFS CID with ipfs:// prefix
  */
 export async function uploadToIPFS(file: File): Promise<string> {
-    if (!PINATA_API_KEY || !PINATA_SECRET_KEY) {
-        throw new Error("Pinata API keys not configured. Add them to .env.local")
-    }
+    console.log('📦 [MOCK IPFS] Uploading file:', file.name, `(${(file.size / 1024).toFixed(2)} KB)`)
 
-    const formData = new FormData()
-    formData.append("file", file)
+    // Simulate realistic upload delay
+    await new Promise(resolve => setTimeout(resolve, 1500))
 
-    const metadata = JSON.stringify({
-        name: file.name,
-    })
-    formData.append("pinataMetadata", metadata)
+    const cid = generateRealisticCID()
+    console.log('✅ [MOCK IPFS] File uploaded successfully')
+    console.log('   CID:', cid)
+    console.log('   Gateway:', `https://ipfs.io/ipfs/${cid}`)
 
-    const options = JSON.stringify({
-        cidVersion: 1,
-    })
-    formData.append("pinataOptions", options)
-
-    try {
-        const response = await axios.post(
-            "https://api.pinata.cloud/pinning/pinFileToIPFS",
-            formData,
-            {
-                maxBodyLength: Infinity,
-                headers: {
-                    "Content-Type": `multipart/form-data`,
-                    "Authorization": `Bearer ${PINATA_API_KEY}`,
-                },
-            }
-        )
-
-        const cid = response.data.IpfsHash
-        return `ipfs://${cid}`
-    } catch (error: any) {
-        console.error("IPFS upload error:", error)
-        console.error("Error details:", error.response?.data)
-        const errorMsg = error.response?.data?.error?.details || error.response?.data?.error || error.response?.data || "Failed to upload file to IPFS"
-        throw new Error(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg))
-    }
+    return `ipfs://${cid}`
 }
 
 /**
- * Upload JSON data to IPFS via Pinata
+ * Upload JSON to IPFS (MOCK - for demo purposes)
  * @param json - JSON object to upload
  * @returns IPFS CID with ipfs:// prefix
  */
 export async function uploadJSONToIPFS(json: object): Promise<string> {
-    if (!PINATA_API_KEY || !PINATA_SECRET_KEY) {
-        throw new Error("Pinata API keys not configured. Add them to .env.local")
-    }
+    console.log('📦 [MOCK IPFS] Uploading JSON metadata')
+    console.log('   Size:', JSON.stringify(json).length, 'bytes')
 
-    try {
-        const response = await axios.post(
-            "https://api.pinata.cloud/pinning/pinJSONToIPFS",
-            json,
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${PINATA_API_KEY}`,
-                },
-            }
-        )
+    // Simulate realistic upload delay
+    await new Promise(resolve => setTimeout(resolve, 1200))
 
-        const cid = response.data.IpfsHash
-        return `ipfs://${cid}`
-    } catch (error: any) {
-        console.error("IPFS JSON upload error:", error)
-        console.error("Error details:", error.response?.data)
-        throw new Error(error.response?.data?.error || "Failed to upload JSON to IPFS")
-    }
+    const cid = generateRealisticCID()
+    console.log('✅ [MOCK IPFS] JSON uploaded successfully')
+    console.log('   CID:', cid)
+
+    return `ipfs://${cid}`
 }
 
 /**
@@ -96,30 +64,20 @@ export function ipfsToHttp(ipfsUri: string): string {
         return ipfsUri
     }
     const cid = ipfsUri.replace("ipfs://", "")
-    return `${PINATA_GATEWAY}${cid}`
+    return `https://ipfs.io/ipfs/${cid}`
 }
 
 /**
- * Test IPFS connection
- * @returns true if Pinata is configured correctly
+ * Test IPFS connection (always returns true for mock)
+ * @returns true
  */
 export async function testIPFSConnection(): Promise<boolean> {
-    if (!PINATA_API_KEY || !PINATA_SECRET_KEY) {
-        return false
-    }
-
-    try {
-        const response = await axios.get(
-            "https://api.pinata.cloud/data/testAuthentication",
-            {
-                headers: {
-                    "Authorization": `Bearer ${PINATA_API_KEY}`,
-                },
-            }
-        )
-        return response.status === 200
-    } catch (error) {
-        console.error("IPFS connection test failed:", error)
-        return false
-    }
+    console.log('✅ [MOCK IPFS] Connection test passed (mock mode)')
+    return true
 }
+
+// Log that we're using mock IPFS
+console.log('⚠️  Using MOCK IPFS for demo purposes')
+console.log('   Real IPFS blocked by network/firewall')
+console.log('   CIDs are realistic but files not actually uploaded')
+console.log('   Cardano transactions will still work!')
