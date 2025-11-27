@@ -1,127 +1,132 @@
 /**
  * Cardano Query Utilities
- * Phase 1: Query published versions from registry
+ * Phase 1: Query published items from Cardano blockchain
+ * Queries transactions from wallet address and parses metadata
  */
 
 import { RegistryDatum } from "./types"
 
 /**
- * Get all published versions for a contract or package
- * @param name - Contract or package name
- * @param type - Type filter
- * @returns Array of registry datums sorted by timestamp
+ * Get all published items from Cardano blockchain
+ * Queries transactions from the connected wallet and parses metadata
  */
-export async function getVersions(
-    name: string,
-    type: "contract" | "package"
-): Promise<RegistryDatum[]> {
-    // Dynamically import Lucid
-    const { Lucid, Blockfrost, Data } = await import("lucid-cardano")
+export async function getAllPublished(walletAddress?: string): Promise<RegistryDatum[]> {
+    try {
+        const blockfrostApiKey = process.env.NEXT_PUBLIC_BLOCKFROST_API_KEY
+        const network = process.env.NEXT_PUBLIC_CARDANO_NETWORK?.toLowerCase() || "preprod"
 
-    const blockfrostApiKey = process.env.NEXT_PUBLIC_BLOCKFROST_API_KEY
-    const network = process.env.NEXT_PUBLIC_CARDANO_NETWORK as "Preprod" | "Mainnet"
-    const scriptAddress = process.env.NEXT_PUBLIC_REGISTRY_SCRIPT_ADDRESS
-
-    if (!blockfrostApiKey || !scriptAddress) {
-        throw new Error("Cardano configuration missing")
-    }
-
-    // Initialize Lucid
-    const lucid = await Lucid.new(
-        new Blockfrost(
-            `https://cardano-${network.toLowerCase()}.blockfrost.io/api/v0`,
-            blockfrostApiKey
-        ),
-        network
-    )
-
-    // Query UTxOs at script address
-    const utxos = await lucid.utxosAt(scriptAddress)
-
-    // Parse datums and filter
-    const versions: RegistryDatum[] = []
-
-    for (const utxo of utxos) {
-        if (!utxo.datum) continue
-
-        try {
-            // Parse inline datum - cast to any to handle Lucid's complex Data types
-            const datum = Data.from(utxo.datum) as any
-
-            // Convert from Plutus data to our type
-            const registryDatum: RegistryDatum = {
-                type: Buffer.from(datum.type, "hex").toString() as "contract" | "package",
-                name: Buffer.from(datum.name, "hex").toString(),
-                version: Buffer.from(datum.version, "hex").toString(),
-                sourceCID: Buffer.from(datum.sourceCID, "hex").toString(),
-                metadataCID: Buffer.from(datum.metadataCID, "hex").toString(),
-                publisher: Buffer.from(datum.publisher, "hex").toString(),
-                timestamp: Number(datum.timestamp),
-            }
-
-            // Filter by name and type
-            if (registryDatum.name === name && registryDatum.type === type) {
-                versions.push(registryDatum)
-            }
-        } catch (error) {
-            console.error("Failed to parse datum:", error)
-            continue
+        if (!blockfrostApiKey) {
+            console.warn("Blockfrost API key not configured, returning empty array")
+            return []
         }
-    }
 
-    // Sort by timestamp descending (newest first)
-    return versions.sort((a, b) => b.timestamp - a.timestamp)
+        // If no wallet address provided, try to get from localStorage
+        if (!walletAddress) {
+            if (typeof window !== 'undefined') {
+                const stored = localStorage.getItem('cardano_published_items')
+                if (stored) {
+                    return JSON.parse(stored).sort((a: RegistryDatum, b: RegistryDatum) => b.timestamp - a.timestamp)
+                }
+            }
+            return []
+        }
+
+        // Query transactions from wallet address
+        const baseUrl = `https://cardano-${network}.blockfrost.io/api/v0`
+
+        // Get all transactions from this address
+        const txResponse = await fetch(`${baseUrl}/addresses/${walletAddress}/transactions?order=desc&count=100`, {
+            headers: {
+                'project_id': blockfrostApiKey
+            }
+        })
+
+        if (!txResponse.ok) {
+            console.error("Failed to fetch transactions:", txResponse.status)
+            return []
+        }
+
+        const transactions = await txResponse.json()
+        const items: RegistryDatum[] = []
+
+        // Parse each transaction for registry metadata (label 721)
+        for (const tx of transactions) {
+            try {
+                const metadataResponse = await fetch(`${baseUrl}/txs/${tx.tx_hash}/metadata`, {
+                    headers: {
+                        'project_id': blockfrostApiKey
+                    }
+                })
+
+                if (!metadataResponse.ok) continue
+
+                const metadata = await metadataResponse.json()
+
+                // Look for our registry metadata (label 721)
+                const registryMetadata = metadata.find((m: any) => m.label === '721')
+
+                if (registryMetadata && registryMetadata.json_metadata?.registry) {
+                    const reg = registryMetadata.json_metadata.registry
+
+                    // Reconstruct chunked strings
+                    const unchunk = (value: string | string[]) => {
+                        return Array.isArray(value) ? value.join('') : value
+                    }
+
+                    const item: RegistryDatum = {
+                        type: reg.type as "contract" | "package",
+                        name: unchunk(reg.name),
+                        version: reg.version,
+                        sourceCID: unchunk(reg.sourceCID),
+                        metadataCID: unchunk(reg.metadataCID),
+                        publisher: unchunk(reg.publisher),
+                        timestamp: reg.timestamp
+                    }
+
+                    items.push(item)
+                }
+            } catch (error) {
+                console.error("Failed to parse transaction metadata:", error)
+                continue
+            }
+        }
+
+        // Sort by timestamp descending
+        return items.sort((a, b) => b.timestamp - a.timestamp)
+
+    } catch (error) {
+        console.error("Failed to query Cardano:", error)
+        return []
+    }
 }
 
 /**
- * Get all published items (contracts and packages)
- * @returns Array of all registry datums
+ * Get all published versions for a specific contract or package
  */
-export async function getAllPublished(): Promise<RegistryDatum[]> {
-    const { Lucid, Blockfrost, Data } = await import("lucid-cardano")
+export async function getVersions(
+    name: string,
+    type: "contract" | "package",
+    walletAddress?: string
+): Promise<RegistryDatum[]> {
+    const all = await getAllPublished(walletAddress)
+    return all.filter(item => item.name === name && item.type === type)
+}
 
-    const blockfrostApiKey = process.env.NEXT_PUBLIC_BLOCKFROST_API_KEY
-    const network = process.env.NEXT_PUBLIC_CARDANO_NETWORK as "Preprod" | "Mainnet"
-    const scriptAddress = process.env.NEXT_PUBLIC_REGISTRY_SCRIPT_ADDRESS
+/**
+ * Save published item to localStorage (backup)
+ * This is called after successful Cardano publish
+ */
+export function savePublishedItem(item: RegistryDatum): void {
+    if (typeof window === 'undefined') return
 
-    if (!blockfrostApiKey || !scriptAddress) {
-        throw new Error("Cardano configuration missing")
-    }
+    const stored = localStorage.getItem('cardano_published_items')
+    const items: RegistryDatum[] = stored ? JSON.parse(stored) : []
 
-    const lucid = await Lucid.new(
-        new Blockfrost(
-            `https://cardano-${network.toLowerCase()}.blockfrost.io/api/v0`,
-            blockfrostApiKey
-        ),
-        network
-    )
+    // Add new item
+    items.push(item)
 
-    const utxos = await lucid.utxosAt(scriptAddress)
-    const items: RegistryDatum[] = []
+    // Save back
+    localStorage.setItem('cardano_published_items', JSON.stringify(items))
 
-    for (const utxo of utxos) {
-        if (!utxo.datum) continue
-
-        try {
-            // Cast to any to handle Lucid's complex Data types
-            const datum = Data.from(utxo.datum) as any
-
-            const registryDatum: RegistryDatum = {
-                type: Buffer.from(datum.type, "hex").toString() as "contract" | "package",
-                name: Buffer.from(datum.name, "hex").toString(),
-                version: Buffer.from(datum.version, "hex").toString(),
-                sourceCID: Buffer.from(datum.sourceCID, "hex").toString(),
-                metadataCID: Buffer.from(datum.metadataCID, "hex").toString(),
-                publisher: Buffer.from(datum.publisher, "hex").toString(),
-                timestamp: Number(datum.timestamp),
-            }
-
-            items.push(registryDatum)
-        } catch (error) {
-            console.error("Failed to parse datum:", error)
-            continue
-        }
-    }
-
-    return items.sort((a, b) => b.timestamp - a.timestamp)
+    console.log('✅ Saved published item to local backup:', item.name, item.version)
 }

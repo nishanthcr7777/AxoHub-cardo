@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useCardanoWallet } from "@/contexts/CardanoWalletContext"
 import { uploadToIPFS, uploadJSONToIPFS, ipfsToHttp } from "@/lib/ipfs"
 import { buildPublishTransaction } from "@/lib/cardano/publish"
+import { savePublishedItem } from "@/lib/cardano/query"
 import { PackageMetadata } from "@/lib/cardano/types"
 import { Upload, Package, Loader2, CheckCircle2, ExternalLink } from "lucide-react"
 import { toast } from "sonner"
@@ -114,6 +115,9 @@ export function PublishPackageForm() {
 
       toast.info("Submitting to Cardano...")
       const txHashResult = await signedTx.submit()
+
+      // Save to localStorage for Phase 1
+      savePublishedItem(datum)
 
       setTxHash(txHashResult)
       setCurrentStep("success")

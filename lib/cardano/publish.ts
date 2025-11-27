@@ -23,14 +23,9 @@ export async function publishToCardano(params: {
 
     const blockfrostApiKey = process.env.NEXT_PUBLIC_BLOCKFROST_API_KEY
     const network = process.env.NEXT_PUBLIC_CARDANO_NETWORK as "Preprod" | "Mainnet"
-    const scriptAddress = process.env.NEXT_PUBLIC_REGISTRY_SCRIPT_ADDRESS
 
     if (!blockfrostApiKey) {
         throw new Error("Blockfrost API key not configured")
-    }
-
-    if (!scriptAddress) {
-        throw new Error("Registry script address not configured")
     }
 
     // Initialize Lucid
@@ -53,45 +48,9 @@ export async function publishToCardano(params: {
         timestamp: Date.now(),
     }
 
-    // Define datum schema for inline datum
-    const RegistryDatumSchema = Data.Object({
-        type: Data.Bytes(),
-        name: Data.Bytes(),
-        version: Data.Bytes(),
-        sourceCID: Data.Bytes(),
-        metadataCID: Data.Bytes(),
-        publisher: Data.Bytes(),
-        timestamp: Data.Integer(),
-    })
-
-    // Convert datum to Plutus data
-    const datumData = Data.to(
-        {
-            type: Buffer.from(datum.type).toString("hex"),
-            name: Buffer.from(datum.name).toString("hex"),
-            version: Buffer.from(datum.version).toString("hex"),
-            sourceCID: Buffer.from(datum.sourceCID).toString("hex"),
-            metadataCID: Buffer.from(datum.metadataCID).toString("hex"),
-            publisher: Buffer.from(datum.publisher).toString("hex"),
-            timestamp: BigInt(datum.timestamp),
-        } as any,
-        RegistryDatumSchema
-    )
-
-    // Build transaction
-    // Send 2 ADA to script address with inline datum
-    const tx = await lucid
-        .newTx()
-        .payToContract(
-            scriptAddress,
-            { inline: datumData },
-            { lovelace: BigInt(2_000_000) } // 2 ADA
-        )
-        .complete()
-
     // Note: Transaction signing will be done in the UI with wallet
-    // This function returns the unsigned transaction
-    // The UI will sign and submit it
+    // This function returns placeholder data
+    // The UI will build and sign the actual transaction
 
     return {
         txHash: "", // Will be filled after signing
@@ -103,7 +62,8 @@ export async function publishToCardano(params: {
 
 /**
  * Build unsigned transaction for publishing
- * Returns transaction object that can be signed by wallet
+ * Phase 1: Simple transaction with metadata (no inline datum for now)
+ * Phase 2: Will use payToContract with Aiken validator and inline datum
  */
 export async function buildPublishTransaction(params: {
     type: "contract" | "package"
@@ -114,14 +74,6 @@ export async function buildPublishTransaction(params: {
     walletAddress: string
     lucid: any // Lucid instance from wallet context
 }) {
-    const { Data } = await import("lucid-cardano")
-
-    const scriptAddress = process.env.NEXT_PUBLIC_REGISTRY_SCRIPT_ADDRESS
-
-    if (!scriptAddress) {
-        throw new Error("Registry script address not configured")
-    }
-
     // Create registry datum
     const datum: RegistryDatum = {
         type: params.type,
@@ -133,39 +85,36 @@ export async function buildPublishTransaction(params: {
         timestamp: Date.now(),
     }
 
-    // Define datum schema
-    const RegistryDatumSchema = Data.Object({
-        type: Data.Bytes(),
-        name: Data.Bytes(),
-        version: Data.Bytes(),
-        sourceCID: Data.Bytes(),
-        metadataCID: Data.Bytes(),
-        publisher: Data.Bytes(),
-        timestamp: Data.Integer(),
-    })
+    // Helper to chunk strings longer than 64 chars (Cardano metadata limit)
+    const chunkString = (str: string, size: number = 64): string | string[] => {
+        if (str.length <= size) return str
+        const chunks: string[] = []
+        for (let i = 0; i < str.length; i += size) {
+            chunks.push(str.slice(i, i + size))
+        }
+        return chunks
+    }
 
-    // Convert to Plutus data
-    const datumData = Data.to(
-        {
-            type: Buffer.from(datum.type).toString("hex"),
-            name: Buffer.from(datum.name).toString("hex"),
-            version: Buffer.from(datum.version).toString("hex"),
-            sourceCID: Buffer.from(datum.sourceCID).toString("hex"),
-            metadataCID: Buffer.from(datum.metadataCID).toString("hex"),
-            publisher: Buffer.from(datum.publisher).toString("hex"),
-            timestamp: BigInt(datum.timestamp),
-        } as any,
-        RegistryDatumSchema
-    )
-
-    // Build transaction
+    // Build transaction with metadata
+    // Phase 1: Simple transaction with registry data in metadata
+    // Chunk long strings to respect 64-char limit
     const tx = await params.lucid
         .newTx()
-        .payToContract(
-            scriptAddress,
-            { inline: datumData },
+        .payToAddress(
+            params.walletAddress,
             { lovelace: BigInt(2_000_000) }
         )
+        .attachMetadata(721, {
+            registry: {
+                type: datum.type,
+                name: chunkString(datum.name),
+                version: datum.version,
+                sourceCID: chunkString(datum.sourceCID),
+                metadataCID: chunkString(datum.metadataCID),
+                publisher: chunkString(datum.publisher),
+                timestamp: datum.timestamp,
+            }
+        })
         .complete()
 
     return { tx, datum }

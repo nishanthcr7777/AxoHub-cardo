@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion"
 import { Sidebar } from "@/components/sidebar"
-import { SourcesTable } from "@/components/sources-table"
+import { ContractsCards } from "@/components/contracts-cards"
 import { SearchFilters } from "@/components/search-filters"
 import { FilterProvider } from "@/contexts/filter-context"
 
@@ -21,7 +21,7 @@ export default function BrowseSourcesPage() {
                 animate={{ opacity: 1, x: 0 }}
                 className="text-2xl font-bold text-white"
               >
-                Browse Source Code
+                Browse Contracts
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0, x: -20 }}
@@ -29,7 +29,7 @@ export default function BrowseSourcesPage() {
                 transition={{ delay: 0.1 }}
                 className="text-slate-400 mt-1"
               >
-                Explore verified smart contract source code
+                Explore published smart contracts on Cardano
               </motion.p>
             </div>
           </header>
@@ -38,7 +38,7 @@ export default function BrowseSourcesPage() {
           <main className="p-8">
             <div className="max-w-7xl mx-auto space-y-6">
               <SearchFilters />
-              <SourcesTable />
+              <ContractsCards />
             </div>
           </main>
         </div>
