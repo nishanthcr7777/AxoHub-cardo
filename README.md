@@ -53,7 +53,7 @@ Axohub is an **open-source package & source manager for smart contracts**, funct
 * **Frontend:** Next.js 14 + TailwindCSS + Framer Motion
 * **UI Components:** Radix UI (accessible, unstyled primitives)
 * **Forms:** React Hook Form + Zod validation
-* **Storage:** IPFS (currently mock implementation)
+* **Storage:** IPFS via Pinata
 * **Hosting:** Vercel
 * **Blockchain:** *Cardano integration in progress*
 
@@ -101,7 +101,8 @@ AxoHub-BCH/
 │   ├── *-form.tsx          # Form components
 │   └── *-table.tsx         # Table components
 ├── lib/                    # Utilities
-│   └── ipfs-mock.ts        # Mock IPFS implementation
+│   ├── ipfs.ts             # Pinata IPFS integration
+│   └── ipfs-mock.ts        # Local storage mock (for demo data)
 ├── hooks/                  # Custom React hooks
 ├── contexts/               # React contexts
 └── styles/                 # Global styles
@@ -116,7 +117,7 @@ AxoHub-BCH/
 * [x] Multi-step form workflows
 * [x] Responsive design
 * [ ] Cardano blockchain integration
-* [ ] Real IPFS integration (Pinata/Infura)
+* [x] Real IPFS integration (Pinata)
 * [ ] Wallet connection (Cardano wallets)
 * [ ] On-chain contract registry
 * [ ] Multi-chain support
