@@ -1,83 +1,91 @@
-# IPFS Setup Instructions for Teammate
+# IPFS Setup Instructions
 
 ## Current Status
-- **Mock IPFS** is currently active (network restrictions)
-- Generates realistic CIDs for demo
-- Cardano transactions work perfectly
-- Files not actually uploaded to IPFS
+- **Pinata IPFS** is configured and ready to use
+- Requires JWT token from Pinata dashboard
+- Files will be pinned to IPFS automatically
 
-## To Switch to Real IPFS
+## Setup Pinata IPFS
 
-### Option 1: Lighthouse (Recommended)
+### Step 1: Get Pinata JWT Token
 
-1. **Get API Key:**
-   - Visit: https://files.lighthouse.storage
-   - Sign up (free)
-   - Copy your API key
+1. **Sign up/Login:**
+   - Visit: https://app.pinata.cloud
+   - Create account or sign in
 
-2. **Update Environment:**
-   ```bash
-   # Add to .env.local
-   NEXT_PUBLIC_LIGHTHOUSE_API_KEY=your_lighthouse_api_key_here
-   ```
+2. **Create API Key:**
+   - Go to: https://app.pinata.cloud/developers/api-keys
+   - Click "New Key"
+   - Enable "pinFileToIPFS" and "pinJSONToIPFS" permissions
+   - Copy the JWT token
 
-3. **Switch Files:**
-   ```bash
-   # Backup current mock
-   mv lib/ipfs.ts lib/ipfs-mock-backup.ts
-   
-   # Use real IPFS
-   mv lib/ipfs-real.ts lib/ipfs.ts
-   ```
+### Step 2: Configure Environment
 
-4. **Restart:**
-   ```bash
-   npm run dev
-   ```
+Add to `.env.local`:
+```bash
+NEXT_PUBLIC_PINATA_JWT=your_pinata_jwt_token_here
+```
 
-### Option 2: Try Other Services
+**Important:** 
+- No quotes around the token
+- No spaces before/after the `=`
+- Restart dev server after adding
 
-If Lighthouse doesn't work on your network, try:
+### Step 3: Verify Setup
+
+1. Start dev server: `npm run dev`
+2. Check console for: `✅ Using Pinata IPFS`
+3. Test upload from publish forms
+4. Verify files are accessible via Pinata gateway
+
+## Alternative IPFS Services
+
+If you need to switch to a different IPFS service, you'll need to modify `lib/ipfs.ts` to use their API. Popular alternatives include:
 
 - **NFT.Storage**: https://nft.storage (requires JWT token)
 - **Web3.Storage**: https://web3.storage (now Storacha)
-- **Pinata**: https://pinata.cloud (requires JWT token)
+- **Lighthouse**: https://files.lighthouse.storage (requires API key)
 
-## Testing Real IPFS
+## Testing Pinata IPFS
 
-1. Upload test files from `test-files/`
-2. Check console for: `✅ File uploaded to IPFS: QmXXX...`
-3. Click IPFS links to verify files are accessible
-4. Complete Cardano publish flow
+1. Upload test files from publish forms
+2. Check console for: `✅ [Pinata] File uploaded successfully`
+3. Check console for CID: `CID: bafybei...`
+4. Click IPFS links to verify files are accessible via Pinata gateway
+5. Complete Cardano publish flow
 
 ## Troubleshooting
 
-**If you get network errors:**
-- Check firewall settings
-- Try different network (mobile hotspot)
-- Disable VPN
-- Check antivirus isn't blocking API calls
+**If you get "JWT token not configured" error:**
+- Verify `.env.local` exists in project root
+- Check token format: `NEXT_PUBLIC_PINATA_JWT=your_token` (no quotes)
+- Restart dev server after adding/updating `.env.local`
+- Check token has correct permissions in Pinata dashboard
 
-**If API key errors:**
-- Verify key is correct (no extra spaces)
-- Check `.env.local` format (no quotes)
-- Restart dev server after changes
+**If upload fails:**
+- Verify JWT token is valid and not expired
+- Check Pinata API key permissions include `pinFileToIPFS` and `pinJSONToIPFS`
+- Check network/firewall isn't blocking `api.pinata.cloud`
+- Check browser console for detailed error messages
 
-## Current Mock IPFS
+**If files aren't accessible:**
+- Wait a few seconds after upload (IPFS propagation)
+- Try Pinata gateway: `https://gateway.pinata.cloud/ipfs/{cid}`
+- Verify CID is correct in transaction metadata
 
-The mock version:
-- ✅ Works offline
-- ✅ Generates realistic CIDs
-- ✅ Allows full UI testing
-- ✅ Cardano transactions work
-- ❌ Files not actually stored
-- ❌ IPFS links won't work
+## Pinata Features
 
-Perfect for:
-- Demo/presentation
-- Testing Cardano flow
-- Development without network access
+- ✅ Automatic pinning (files stay on IPFS)
+- ✅ Fast gateway access
+- ✅ Free tier available (1GB storage)
+- ✅ Reliable IPFS infrastructure
+- ✅ CID v1 support
+
+## Gateway URLs
+
+- **Pinata Gateway**: `https://gateway.pinata.cloud/ipfs/{cid}`
+- **Public IPFS Gateway**: `https://ipfs.io/ipfs/{cid}` (fallback)
 
 ## Questions?
 
-Check `lib/ipfs-real.ts` for the real implementation code.
+Check `lib/ipfs.ts` for the Pinata implementation code.
