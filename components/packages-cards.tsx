@@ -9,12 +9,15 @@ import { getAllPublished } from "@/lib/cardano/query"
 import { RegistryDatum } from "@/lib/cardano/types"
 import { ipfsToHttp } from "@/lib/ipfs"
 import { useCardanoWallet } from "@/contexts/CardanoWalletContext"
+import { SourceViewerModal } from "@/components/source-viewer-modal"
 
 export function PackagesCards() {
   const { address } = useCardanoWallet()
   const [packages, setPackages] = useState<RegistryDatum[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [viewerOpen, setViewerOpen] = useState(false)
+  const [selectedSource, setSelectedSource] = useState<{ cid: string, title: string } | null>(null)
 
   useEffect(() => {
     loadPackages()
@@ -124,15 +127,21 @@ export function PackagesCards() {
             {/* Actions */}
             <div className="mt-4 flex gap-2">
               <Button
-                onClick={() => window.open(ipfsToHttp(pkg.sourceCID), '_blank')}
+                onClick={() => {
+                  setSelectedSource({ cid: pkg.sourceCID, title: `${pkg.name} v${pkg.version} - Source` })
+                  setViewerOpen(true)
+                }}
                 variant="outline"
                 className="flex-1 border-white/10 hover:border-purple-500/50 text-white"
                 size="sm"
               >
-                📄 Source
+                📦 View Source
               </Button>
               <Button
-                onClick={() => window.open(ipfsToHttp(pkg.metadataCID), '_blank')}
+                onClick={() => {
+                  setSelectedSource({ cid: pkg.metadataCID, title: `${pkg.name} v${pkg.version} - Metadata` })
+                  setViewerOpen(true)
+                }}
                 variant="outline"
                 className="flex-1 border-white/10 hover:border-blue-500/50 text-white"
                 size="sm"
@@ -155,6 +164,19 @@ export function PackagesCards() {
           </Card>
         </motion.div>
       ))}
+
+      {/* Source Viewer Modal */}
+      {selectedSource && (
+        <SourceViewerModal
+          isOpen={viewerOpen}
+          onClose={() => {
+            setViewerOpen(false)
+            setSelectedSource(null)
+          }}
+          sourceCID={selectedSource.cid}
+          title={selectedSource.title}
+        />
+      )}
     </div>
   )
 }

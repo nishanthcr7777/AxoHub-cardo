@@ -9,12 +9,15 @@ import { getAllPublished } from "@/lib/cardano/query"
 import { RegistryDatum } from "@/lib/cardano/types"
 import { ipfsToHttp } from "@/lib/ipfs"
 import { useCardanoWallet } from "@/contexts/CardanoWalletContext"
+import { SourceViewerModal } from "@/components/source-viewer-modal"
 
 export function ContractsCards() {
     const { address } = useCardanoWallet()
     const [contracts, setContracts] = useState<RegistryDatum[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState("")
+    const [viewerOpen, setViewerOpen] = useState(false)
+    const [selectedSource, setSelectedSource] = useState<{ cid: string, title: string } | null>(null)
 
     useEffect(() => {
         loadContracts()
@@ -124,15 +127,21 @@ export function ContractsCards() {
                         {/* Actions */}
                         <div className="mt-4 flex gap-2">
                             <Button
-                                onClick={() => window.open(ipfsToHttp(contract.sourceCID), '_blank')}
+                                onClick={() => {
+                                    setSelectedSource({ cid: contract.sourceCID, title: `${contract.name} v${contract.version} - ABI` })
+                                    setViewerOpen(true)
+                                }}
                                 variant="outline"
                                 className="flex-1 border-white/10 hover:border-purple-500/50 text-white"
                                 size="sm"
                             >
-                                📄 ABI
+                                📄 View ABI
                             </Button>
                             <Button
-                                onClick={() => window.open(ipfsToHttp(contract.metadataCID), '_blank')}
+                                onClick={() => {
+                                    setSelectedSource({ cid: contract.metadataCID, title: `${contract.name} v${contract.version} - Metadata` })
+                                    setViewerOpen(true)
+                                }}
                                 variant="outline"
                                 className="flex-1 border-white/10 hover:border-blue-500/50 text-white"
                                 size="sm"
@@ -155,6 +164,19 @@ export function ContractsCards() {
                     </Card>
                 </motion.div>
             ))}
+
+            {/* Source Viewer Modal */}
+            {selectedSource && (
+                <SourceViewerModal
+                    isOpen={viewerOpen}
+                    onClose={() => {
+                        setViewerOpen(false)
+                        setSelectedSource(null)
+                    }}
+                    sourceCID={selectedSource.cid}
+                    title={selectedSource.title}
+                />
+            )}
         </div>
     )
 }
