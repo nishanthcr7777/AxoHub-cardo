@@ -13,7 +13,11 @@ import { ProgressBar } from "@/components/progress-bar"
 import { SuccessModal } from "@/components/success-modal"
 import { useToast } from "@/hooks/use-toast"
 import { ClientOnly } from "@/components/client-only"
-import { ipfsMock } from "@/lib/ipfs-mock"
+import { uploadToIPFS, uploadJSONToIPFS } from "@/lib/ipfs"
+import { useCardanoWallet } from "@/contexts/CardanoWalletContext"
+import { encryptSource, hashSource } from "@/lib/crypto"
+import { mintAccessNFT } from "@/lib/cardano/nft"
+import { generateValidityProof } from "@/lib/zk/proof"
 
 const steps = [
   { id: 1, title: "Contract Details", description: "Basic information about your contract" },
@@ -28,15 +32,18 @@ const compilers = ["solc-0.8.19", "solc-0.8.18", "solc-0.8.17", "solc-0.8.16", "
 const licenses = ["MIT", "Apache-2.0", "GPL-3.0", "BSD-3-Clause", "Unlicense"]
 
 function SubmitSourceFormInner() {
+  const { address, lucid } = useCardanoWallet()
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [nftTokenId, setNftTokenId] = useState("")
   const [formData, setFormData] = useState({
     name: "",
     version: "",
     compiler: "",
     license: "",
     sourceCode: "",
+    privacyMode: "public" as "public" | "private",
   })
   const { toast } = useToast()
 
@@ -71,35 +78,106 @@ function SubmitSourceFormInner() {
     setIsSubmitting(true)
 
     try {
-      // Store source code in IPFS mock
       const normalizedSource = (formData.sourceCode || "").trim()
       if (!normalizedSource) {
         throw new Error("Source code is required")
       }
 
-      console.log("[AxoHub] Uploading source to IPFS mock...")
-      const ipfsCID = await ipfsMock.putText(normalizedSource)
-      console.log("[AxoHub] Generated IPFS CID:", ipfsCID)
+      if (formData.privacyMode === "private") {
+        // PRIVATE MODE: Encrypt source code and mint NFT
+        console.log("[AxoHub] Private mode - encrypting source...")
 
-      // Simulate submission delay
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+        // 1. Encrypt source code
+        const { encrypted, key } = await encryptSource(normalizedSource)
 
-      console.log("[AxoHub] Submission data:", {
-        name: formData.name,
-        version: formData.version,
-        compiler: formData.compiler,
-        license: formData.license,
-        ipfsCID,
-      })
+        // 2. Hash source for verification
+        const sourceHash = await hashSource(normalizedSource)
 
-      setIsSubmitting(false)
-      setShowSuccess(true)
-      console.log("[AxoHub] Submit source completed successfully")
+        // 3. Upload encrypted source to IPFS
+        const encryptedBuffer = Buffer.from(encrypted)
+        const encryptedFile = new File([encryptedBuffer], `${formData.name}_encrypted.bin`, {
+          type: 'application/octet-stream'
+        })
+        const encryptedUri = await uploadToIPFS(encryptedFile)
+        const encryptedCID = encryptedUri.replace('ipfs://', '')
 
-      toast({
-        title: "Source submitted!",
-        description: "Your source code has been stored successfully.",
-      })
+        console.log("[AxoHub] Encrypted source uploaded:", encryptedCID)
+
+        // 4. Generate ZK proof
+        console.log("[AxoHub] Generating ZK proof...")
+        const zkProof = await generateValidityProof(normalizedSource, {
+          name: formData.name,
+          version: formData.version,
+          compiler: formData.compiler
+        })
+
+        // 5. Mint Access NFT with encryption key
+        if (!lucid || !address) {
+          throw new Error("Wallet not connected")
+        }
+
+        console.log("[AxoHub] Minting access NFT...")
+        const tokenId = await mintAccessNFT({
+          metadata: {
+            name: formData.name,
+            version: formData.version,
+            encryptedCID,
+            encryptionKey: key,
+            sourceHash,
+            compiler: formData.compiler,
+            license: formData.license,
+            timestamp: Date.now(),
+            owner: address
+          },
+          lucid,
+          walletAddress: address
+        })
+
+        setNftTokenId(tokenId)
+        console.log("[AxoHub] NFT Token ID (Access Key):", tokenId)
+
+        setIsSubmitting(false)
+        setShowSuccess(true)
+        toast({
+          title: "Private source submitted!",
+          description: "Your source code is encrypted. Save your NFT access key!",
+        })
+
+      } else {
+        // PUBLIC MODE: Standard IPFS upload
+        console.log("[AxoHub] Public mode - uploading source...")
+
+        const sourceFile = new File([normalizedSource], `${formData.name}.sol`, {
+          type: 'text/plain'
+        })
+
+        const ipfsUri = await uploadToIPFS(sourceFile)
+        const ipfsCID = ipfsUri.replace('ipfs://', '')
+
+        const metadata = {
+          name: formData.name,
+          version: formData.version,
+          compiler: formData.compiler,
+          license: formData.license,
+          sourceCID: ipfsCID,
+          timestamp: Date.now()
+        }
+
+        const metadataUri = await uploadJSONToIPFS(metadata)
+        const metadataCID = metadataUri.replace('ipfs://', '')
+
+        console.log("[AxoHub] Public submission complete:", {
+          sourceCID: ipfsCID,
+          metadataCID
+        })
+
+        setIsSubmitting(false)
+        setShowSuccess(true)
+        toast({
+          title: "Source submitted!",
+          description: "Your source code has been stored on IPFS successfully.",
+        })
+      }
     } catch (err: any) {
       console.error("[AxoHub] submitSource error:", err?.message || err)
       setIsSubmitting(false)
@@ -127,8 +205,8 @@ function SubmitSourceFormInner() {
             <div key={step.id} className="flex items-center">
               <motion.div
                 className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 ${step.id <= currentStep
-                    ? "bg-gradient-to-r from-purple-500 to-cyan-500 text-white shadow-lg shadow-purple-500/25"
-                    : "bg-slate-700 text-slate-400 border border-slate-600"
+                  ? "bg-gradient-to-r from-purple-500 to-cyan-500 text-white shadow-lg shadow-purple-500/25"
+                  : "bg-slate-700 text-slate-400 border border-slate-600"
                   }`}
                 whileHover={{ scale: 1.05 }}
               >
@@ -206,6 +284,28 @@ function SubmitSourceFormInner() {
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-white">Privacy Mode</Label>
+                      <Select value={formData.privacyMode} onValueChange={(value) => updateFormData("privacyMode", value)}>
+                        <SelectTrigger className="bg-slate-800/50 border-slate-600 text-white">
+                          <SelectValue placeholder="Select privacy mode" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-800 border-slate-600">
+                          <SelectItem value="public" className="text-white hover:bg-slate-700">
+                            🌐 Public - Everyone can see
+                          </SelectItem>
+                          <SelectItem value="private" className="text-white hover:bg-slate-700">
+                            🔒 Private - NFT-gated access
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {formData.privacyMode === "private" && (
+                        <p className="text-sm text-cyan-400 mt-2">
+                          ✨ Source code will be encrypted. You'll receive an NFT access key.
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
@@ -328,9 +428,34 @@ function SubmitSourceFormInner() {
       <SuccessModal
         isOpen={showSuccess}
         onClose={() => setShowSuccess(false)}
-        title="Source Code Submitted Successfully!"
-        description="Your contract source code has been stored."
-      />
+        title={formData.privacyMode === "private" ? "Private Source Submitted!" : "Source Code Submitted Successfully!"}
+        description={
+          formData.privacyMode === "private"
+            ? "Your source code is encrypted and stored securely. Save your NFT access key below!"
+            : "Your contract source code has been stored."
+        }
+      >
+        {formData.privacyMode === "private" && nftTokenId && (
+          <div className="mt-4 p-4 bg-purple-900/20 border border-purple-500/30 rounded-lg">
+            <h4 className="text-sm font-semibold text-purple-300 mb-2">🔑 NFT Access Key (Passkey)</h4>
+            <div className="bg-black/40 p-3 rounded font-mono text-xs text-white break-all">
+              {nftTokenId}
+            </div>
+            <p className="text-xs text-slate-400 mt-2">
+              ⚠️ Save this key! You'll need it to view your private source code.
+            </p>
+            <Button
+              onClick={() => {
+                navigator.clipboard.writeText(nftTokenId)
+                toast({ title: "Copied!", description: "Access key copied to clipboard" })
+              }}
+              className="mt-3 w-full bg-purple-600 hover:bg-purple-700 text-sm"
+            >
+              📋 Copy Access Key
+            </Button>
+          </div>
+        )}
+      </SuccessModal>
     </>
   )
 }
