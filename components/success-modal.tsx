@@ -10,9 +10,10 @@ interface SuccessModalProps {
   title: string
   description: string
   explorerLink?: string
+  children?: React.ReactNode
 }
 
-export function SuccessModal({ isOpen, onClose, title, description, explorerLink }: SuccessModalProps) {
+export function SuccessModal({ isOpen, onClose, title, description, explorerLink, children }: SuccessModalProps) {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -48,6 +49,8 @@ export function SuccessModal({ isOpen, onClose, title, description, explorerLink
 
               <h2 className="text-2xl font-bold text-white mb-4">{title}</h2>
               <p className="text-slate-300 mb-6">{description}</p>
+
+              {children}
 
               {explorerLink && (
                 <Button

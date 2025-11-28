@@ -1,10 +1,11 @@
 /**
- * NFT-based Access Control for Private Sources
+ * Access Control for Private Sources
  * 
- * Mints NFTs that contain encryption keys for accessing private source code
+ * Stores access metadata on-chain using transaction metadata
+ * Chunks long strings to comply with Cardano's 64-character limit
  */
 
-import { Lucid, Data } from "lucid-cardano"
+import { Lucid } from "lucid-cardano"
 
 export interface AccessNFTMetadata {
     name: string
@@ -19,93 +20,92 @@ export interface AccessNFTMetadata {
 }
 
 /**
- * Mint an Access NFT
- * @param params - NFT parameters
- * @returns NFT token ID (policy + asset name)
+ * Store access metadata on-chain
+ * @param params - Metadata parameters
+ * @returns Transaction hash (used as access key)
  */
 export async function mintAccessNFT(params: {
     metadata: AccessNFTMetadata
     lucid: Lucid
     walletAddress: string
 }): Promise<string> {
-    const { metadata, lucid, walletAddress } = params
+    const { metadata, lucid } = params
 
-    // Create unique asset name from metadata
-    const assetName = `PrivateSource_${metadata.name}_${Date.now()}`
-    const assetNameHex = Buffer.from(assetName).toString('hex')
-
-    // Create minting policy (simple time-locked policy)
-    const { paymentCredential } = lucid.utils.getAddressDetails(walletAddress)
-
-    const mintingPolicy = lucid.utils.nativeScriptFromJson({
-        type: "all",
-        scripts: [
-            {
-                type: "sig",
-                keyHash: paymentCredential?.hash || ""
+    try {
+        // Helper to split long strings into 64-char chunks
+        const chunkString = (str: string, size: number = 64): string[] => {
+            const chunks: string[] = []
+            for (let i = 0; i < str.length; i += size) {
+                chunks.push(str.slice(i, i + size))
             }
-        ]
-    })
-
-    const policyId = lucid.utils.mintingPolicyToId(mintingPolicy)
-    const unit = policyId + assetNameHex
-
-    // Create NFT metadata (CIP-25)
-    const nftMetadata = {
-        [policyId]: {
-            [assetName]: {
-                name: `🔐 ${metadata.name} v${metadata.version}`,
-                image: "ipfs://QmPrivateSourceLockIcon", // Placeholder
-                description: `Access key for private source: ${metadata.name}`,
-                // Embed encryption key and metadata
-                encryptedCID: metadata.encryptedCID,
-                encryptionKey: metadata.encryptionKey,
-                sourceHash: metadata.sourceHash,
-                compiler: metadata.compiler,
-                license: metadata.license,
-                timestamp: metadata.timestamp,
-                owner: metadata.owner
-            }
+            return chunks
         }
+
+        // Split long values into chunks (Cardano has 64-char limit per string)
+        const encKeyChunks = chunkString(metadata.encryptionKey)
+        const cidChunks = chunkString(metadata.encryptedCID)
+        const ownerChunks = chunkString(metadata.owner)
+
+        // Create metadata with chunked values
+        const txMetadata: any = {
+            name: metadata.name.slice(0, 64),
+            version: metadata.version.slice(0, 64),
+            compiler: metadata.compiler.slice(0, 64),
+            license: metadata.license.slice(0, 64),
+            sourceHash: metadata.sourceHash.slice(0, 64),
+            timestamp: metadata.timestamp.toString(),
+            type: "PrivateSourceAccess"
+        }
+
+        // Add chunked encryption key
+        encKeyChunks.forEach((chunk, i) => {
+            txMetadata[`key${i}`] = chunk
+        })
+
+        // Add chunked CID
+        cidChunks.forEach((chunk, i) => {
+            txMetadata[`cid${i}`] = chunk
+        })
+
+        // Add chunked owner
+        ownerChunks.forEach((chunk, i) => {
+            txMetadata[`owner${i}`] = chunk
+        })
+
+        // Create transaction with metadata
+        const tx = await lucid
+            .newTx()
+            .attachMetadata(674, txMetadata)
+            .complete()
+
+        const signed = await tx.sign().complete()
+        const txHash = await signed.submit()
+
+        console.log('✅ Access metadata stored on-chain!')
+        console.log('🔗 Transaction:', txHash)
+        console.log('🔑 Access Key (save this):', txHash)
+
+        return txHash
+
+    } catch (error) {
+        console.error('Metadata storage error:', error)
+        throw new Error(`Failed to store access metadata: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
-
-    // Build and submit transaction
-    const tx = await lucid
-        .newTx()
-        .mintAssets({
-            [unit]: BigInt(1)
-        }, Data.void())
-        .attachMintingPolicy(mintingPolicy)
-        .attachMetadata(721, nftMetadata)
-        .complete()
-
-    const signed = await tx.sign().complete()
-    const txHash = await signed.submit()
-
-    console.log('✅ Access NFT minted!')
-    console.log('📦 Token ID:', unit)
-    console.log('🔗 Transaction:', txHash)
-
-    return unit // This is the NFT token ID (passkey)
 }
 
 /**
- * Query NFT metadata from Cardano
- * @param tokenId - NFT token ID (policy + asset name)
+ * Query access metadata from Cardano
+ * @param txHash - Transaction hash (access key)
  * @param lucid - Lucid instance
- * @returns NFT metadata or null if not found
+ * @returns Access metadata or null if not found
  */
 export async function queryAccessNFT(
-    tokenId: string,
+    txHash: string,
     lucid: Lucid
 ): Promise<AccessNFTMetadata | null> {
     try {
-        // Extract policy ID and asset name
-        const policyId = tokenId.slice(0, 56)
-        const assetNameHex = tokenId.slice(56)
-        const assetName = Buffer.from(assetNameHex, 'hex').toString()
+        console.log('[Access Query] Querying transaction:', txHash)
 
-        // Query Blockfrost for NFT metadata
         const blockfrostApiKey = process.env.NEXT_PUBLIC_BLOCKFROST_API_KEY
         const network = process.env.NEXT_PUBLIC_CARDANO_NETWORK?.toLowerCase() || "preprod"
 
@@ -113,8 +113,9 @@ export async function queryAccessNFT(
             throw new Error("Blockfrost API key not configured")
         }
 
+        // Query transaction metadata
         const response = await fetch(
-            `https://cardano-${network}.blockfrost.io/api/v0/assets/${tokenId}`,
+            `https://cardano-${network}.blockfrost.io/api/v0/txs/${txHash}/metadata`,
             {
                 headers: {
                     'project_id': blockfrostApiKey
@@ -123,89 +124,50 @@ export async function queryAccessNFT(
         )
 
         if (!response.ok) {
-            console.error('NFT not found:', tokenId)
+            console.error('Transaction not found:', txHash)
             return null
         }
 
-        const asset = await response.json()
+        const metadata = await response.json()
 
-        // Get on-chain metadata
-        const metadataResponse = await fetch(
-            `https://cardano-${network}.blockfrost.io/api/v0/assets/${tokenId}/metadata`,
-            {
-                headers: {
-                    'project_id': blockfrostApiKey
-                }
+        // Find label 674 metadata
+        const accessMetadata = metadata.find((m: any) => m.label === '674')
+
+        if (!accessMetadata || !accessMetadata.json_metadata) {
+            console.error('No access metadata found in transaction')
+            return null
+        }
+
+        const data = accessMetadata.json_metadata
+
+        // Reassemble chunked values
+        const reassembleChunks = (obj: any, prefix: string): string => {
+            let result = ''
+            let i = 0
+            while (obj[`${prefix}${i}`]) {
+                result += obj[`${prefix}${i}`]
+                i++
             }
-        )
-
-        if (!metadataResponse.ok) {
-            return null
+            return result
         }
 
-        const metadata = await metadataResponse.json()
-
-        // Extract our custom metadata
-        const nftData = metadata.onchain_metadata?.[policyId]?.[assetName]
-
-        if (!nftData) {
-            return null
-        }
+        const encryptionKey = reassembleChunks(data, 'key')
+        const encryptedCID = reassembleChunks(data, 'cid')
+        const owner = reassembleChunks(data, 'owner')
 
         return {
-            name: nftData.name || '',
-            version: '',
-            encryptedCID: nftData.encryptedCID || '',
-            encryptionKey: nftData.encryptionKey || '',
-            sourceHash: nftData.sourceHash || '',
-            compiler: nftData.compiler || '',
-            license: nftData.license || '',
-            timestamp: nftData.timestamp || 0,
-            owner: nftData.owner || ''
+            name: data.name || '',
+            version: data.version || '',
+            encryptedCID,
+            encryptionKey,
+            sourceHash: data.sourceHash || '',
+            compiler: data.compiler || '',
+            license: data.license || '',
+            timestamp: parseInt(data.timestamp) || 0,
+            owner
         }
     } catch (error) {
-        console.error('Error querying NFT:', error)
+        console.error('Error querying access metadata:', error)
         return null
     }
-}
-
-/**
- * Burn/revoke access NFT
- * @param tokenId - NFT token ID to burn
- * @param lucid - Lucid instance
- * @returns Transaction hash
- */
-export async function burnAccessNFT(
-    tokenId: string,
-    lucid: Lucid,
-    walletAddress: string
-): Promise<string> {
-    const { paymentCredential } = lucid.utils.getAddressDetails(walletAddress)
-
-    const mintingPolicy = lucid.utils.nativeScriptFromJson({
-        type: "all",
-        scripts: [
-            {
-                type: "sig",
-                keyHash: paymentCredential?.hash || ""
-            }
-        ]
-    })
-
-    // Burn the NFT
-    const tx = await lucid
-        .newTx()
-        .mintAssets({
-            [tokenId]: BigInt(-1)
-        }, Data.void())
-        .attachMintingPolicy(mintingPolicy)
-        .complete()
-
-    const signed = await tx.sign().complete()
-    const txHash = await signed.submit()
-
-    console.log('🔥 Access NFT burned (access revoked)')
-    console.log('🔗 Transaction:', txHash)
-
-    return txHash
 }

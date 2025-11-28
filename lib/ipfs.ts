@@ -118,10 +118,9 @@ export async function uploadJSONToIPFS(json: object): Promise<string> {
  * @returns HTTP gateway URL
  */
 export function ipfsToHttp(ipfsUri: string): string {
-    if (!ipfsUri.startsWith("ipfs://")) {
-        return ipfsUri
-    }
-    const cid = ipfsUri.replace("ipfs://", "")
+    const cid = ipfsUri.startsWith("ipfs://")
+        ? ipfsUri.replace("ipfs://", "")
+        : ipfsUri
     return `${IPFS_GATEWAY}${cid}`
 }
 

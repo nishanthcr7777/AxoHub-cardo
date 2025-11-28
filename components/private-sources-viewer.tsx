@@ -25,20 +25,12 @@ export function PrivateSourcesViewer() {
 
     const handleUnlock = async () => {
         if (!passkey.trim()) {
-            toast({
-                title: "Missing passkey",
-                description: "Please enter your NFT access key",
-                variant: "destructive"
-            })
+            toast.error("Please enter your NFT access key")
             return
         }
 
         if (!lucid) {
-            toast({
-                title: "Wallet not connected",
-                description: "Please connect your wallet first",
-                variant: "destructive"
-            })
+            toast.error("Please connect your wallet first")
             return
         }
 
@@ -76,18 +68,11 @@ export function PrivateSourcesViewer() {
                 metadata: nftMetadata
             })
 
-            toast({
-                title: "Source unlocked!",
-                description: "Private source code decrypted successfully"
-            })
+            toast.success("Private source code decrypted successfully")
 
         } catch (error: any) {
             console.error("[PrivateViewer] Unlock error:", error)
-            toast({
-                title: "Failed to unlock",
-                description: error.message || "Invalid access key or network error",
-                variant: "destructive"
-            })
+            toast.error(error.message || "Invalid access key or network error")
         } finally {
             setIsUnlocking(false)
         }
@@ -96,10 +81,7 @@ export function PrivateSourcesViewer() {
     const handleCopySource = () => {
         if (unlockedSource) {
             navigator.clipboard.writeText(unlockedSource.sourceCode)
-            toast({
-                title: "Copied!",
-                description: "Source code copied to clipboard"
-            })
+            toast.success("Source code copied to clipboard")
         }
     }
 

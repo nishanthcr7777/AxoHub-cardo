@@ -87,6 +87,11 @@ function SubmitSourceFormInner() {
         // PRIVATE MODE: Encrypt source code and mint NFT
         console.log("[AxoHub] Private mode - encrypting source...")
 
+        // Check wallet connection
+        if (!lucid || !address) {
+          throw new Error("Please connect your Cardano wallet to submit private sources")
+        }
+
         // 1. Encrypt source code
         const { encrypted, key } = await encryptSource(normalizedSource)
 
@@ -112,10 +117,6 @@ function SubmitSourceFormInner() {
         })
 
         // 5. Mint Access NFT with encryption key
-        if (!lucid || !address) {
-          throw new Error("Wallet not connected")
-        }
-
         console.log("[AxoHub] Minting access NFT...")
         const tokenId = await mintAccessNFT({
           metadata: {
