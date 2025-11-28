@@ -5,11 +5,17 @@
  * 1. Get JWT token from https://app.pinata.cloud/developers/api-keys
  * 2. Add to .env.local: NEXT_PUBLIC_PINATA_JWT=your_jwt_token
  * 3. Restart dev server
+ * 
+ * GATEWAY OPTIONS:
+ * - Set NEXT_PUBLIC_PINATA_GATEWAY in .env.local to use custom gateway
+ * - Default: Pinata's gateway
+ * - Alternatives: https://ipfs.io/ipfs/, https://cloudflare-ipfs.com/ipfs/
  */
 
 const PINATA_JWT = process.env.NEXT_PUBLIC_PINATA_JWT
 const PINATA_API = "https://api.pinata.cloud/pinning"
-const PINATA_GATEWAY = "https://gateway.pinata.cloud/ipfs/"
+// Configurable gateway - can be changed in .env.local
+const IPFS_GATEWAY = process.env.NEXT_PUBLIC_IPFS_GATEWAY || "https://gateway.pinata.cloud/ipfs/"
 
 /**
  * Upload file to IPFS via Pinata
@@ -52,9 +58,10 @@ export async function uploadToIPFS(file: File): Promise<string> {
 
     const data = await response.json()
     const cid = data.IpfsHash
-    console.log('[Pinata] File uploaded successfully')
-    console.log('CID:', cid)
-    console.log('Gateway:', `${PINATA_GATEWAY}${cid}`)
+    console.log('[Pinata] ✅ File uploaded successfully')
+    console.log('📦 CID:', cid)
+    console.log('🔗 Gateway URL:', `${IPFS_GATEWAY}${cid}`)
+    console.log('💡 View in Pinata:', `https://app.pinata.cloud/pinmanager`)
 
     return `ipfs://${cid}`
 }
@@ -99,8 +106,8 @@ export async function uploadJSONToIPFS(json: object): Promise<string> {
 
     const data = await response.json()
     const cid = data.IpfsHash
-    console.log('[Pinata] JSON uploaded successfully')
-    console.log('CID:', cid)
+    console.log('[Pinata] ✅ JSON uploaded successfully')
+    console.log('📦 CID:', cid)
 
     return `ipfs://${cid}`
 }
@@ -115,7 +122,16 @@ export function ipfsToHttp(ipfsUri: string): string {
         return ipfsUri
     }
     const cid = ipfsUri.replace("ipfs://", "")
-    return `${PINATA_GATEWAY}${cid}`
+    return `${IPFS_GATEWAY}${cid}`
+}
+
+/**
+ * Get just the CID from IPFS URI
+ * @param ipfsUri - IPFS URI (ipfs://...)
+ * @returns Just the CID
+ */
+export function getCID(ipfsUri: string): string {
+    return ipfsUri.replace("ipfs://", "")
 }
 
 /**
@@ -124,7 +140,7 @@ export function ipfsToHttp(ipfsUri: string): string {
  */
 export async function testIPFSConnection(): Promise<boolean> {
     if (!PINATA_JWT) {
-        console.error(' [Pinata] JWT token not configured')
+        console.error('⚠️ [Pinata] JWT token not configured')
         return false
     }
 
@@ -137,23 +153,24 @@ export async function testIPFSConnection(): Promise<boolean> {
         })
 
         if (response.ok) {
-            console.log(' [Pinata] Connection test passed')
+            console.log('✅ [Pinata] Connection test passed')
             return true
         } else {
-            console.error(' [Pinata] Connection test failed:', response.status)
+            console.error('❌ [Pinata] Connection test failed:', response.status)
             return false
         }
     } catch (error) {
-        console.error(' [Pinata] Connection test error:', error)
+        console.error('❌ [Pinata] Connection test error:', error)
         return false
     }
 }
 
 // Log Pinata status
 if (PINATA_JWT) {
-    console.log(' Using Pinata IPFS')
-    console.log(' Gateway:', PINATA_GATEWAY)
+    console.log('📌 Using Pinata IPFS')
+    console.log('🌐 Gateway:', IPFS_GATEWAY)
+    console.log('💡 Tip: Set NEXT_PUBLIC_IPFS_GATEWAY in .env.local to use a different gateway')
 } else {
-    console.warn(' Pinata JWT not configured')
-    console.warn(' Add NEXT_PUBLIC_PINATA_JWT to .env.local')
+    console.warn('⚠️ Pinata JWT not configured')
+    console.warn('   Add NEXT_PUBLIC_PINATA_JWT to .env.local')
 }
