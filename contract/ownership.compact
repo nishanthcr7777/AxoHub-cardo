@@ -1,0 +1,29 @@
+module OwnershipContract {
+  // Exported circuit for proving ownership
+  export circuit verifyOwnership(
+    nftId: Bytes<32>,           // Public input: SHA256 hash of NFT ID
+    encryptedCidHash: Bytes<32>, // Public input: Hash of encrypted CID
+    privateNftId: Bytes<64>,     // Private witness: Actual NFT ID
+    privateCidHash: Bytes<32>    // Private witness: Actual encrypted CID hash
+  ): Void {
+    // 1. Verify the public NFT ID hash matches the private witness
+    // This proves we know the preimage of the public commitment
+    assert(sha256(privateNftId) == nftId);
+
+    // 2. Verify the encrypted CID hash matches
+    // In a real scenario, we might decrypt or prove properties of the CID
+    // Here we prove we know the private value matching the public commitment
+    assert(privateCidHash == encryptedCidHash);
+  }
+
+  // Ledger state (if needed for on-chain verification)
+  state {
+    // Store verified proofs or commitments
+    verifiedCommitments: Map<Bytes<32>, Boolean>;
+  }
+
+  // Contract constructor
+  export constructor() {
+    verifiedCommitments = new Map<Bytes<32>, Boolean>();
+  }
+}
