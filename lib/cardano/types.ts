@@ -62,3 +62,35 @@ export interface ValidatorConfig {
     policyId: string
     referenceScriptUtxo?: string  // Optional: for reference script
 }
+
+// Hydra Commit Type
+export interface HydraCommit {
+    id: string
+    packageId: string
+    version: string
+    sourceCode: string
+    sourceCID: string
+    metadataCID: string
+    message: string
+    author: string
+    timestamp: number
+    commitHash: string
+    parentCommitHash?: string
+    status: 'hydra_pending' | 'pushed_to_l1'
+    linesAdded?: number
+    linesRemoved?: number
+}
+
+// Combined Version History Item (Hydra + L1)
+export interface VersionHistoryItem {
+    id: string
+    type: 'hydra' | 'l1'
+    version: string
+    message?: string
+    timestamp: number
+    author: string
+    sourceCID: string
+    status: 'pending' | 'confirmed'
+    commitData?: HydraCommit
+    l1Data?: RegistryDatum
+}
