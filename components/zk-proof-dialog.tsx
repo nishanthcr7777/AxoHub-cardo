@@ -41,7 +41,7 @@ export function ZKProofDialog({
 
     const handleGenerateProof = async () => {
         if (!nftId.trim()) {
-            toast.error("Please enter an NFT token ID")
+            toast.error("Please enter an NFT ID or transaction hash")
             return
         }
 

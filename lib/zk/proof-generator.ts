@@ -1,11 +1,12 @@
 /**
  * ZK Proof Generator - High-level API for generating ownership proofs
+ * Now using SnarkJS for real zero-knowledge proofs
  */
 
-import { midnightClient, ZKProof, ZKProofInputs } from './midnight-client'
+import { snarkjsClient, ZKProof, ZKProofInputs } from './snarkjs-client'
 import { Lucid, Blockfrost } from 'lucid-cardano'
 
-const DEMO_MODE = process.env.NEXT_PUBLIC_ENABLE_DEMO_MODE !== 'false';
+const DEMO_MODE = false; // Always use real proofs with SnarkJS
 
 // Demo NFT data for testing
 const DEMO_NFTS: Record<string, any> = {
@@ -70,10 +71,30 @@ export class ProofGenerator {
      * Generate ZK proof of NFT ownership
      * This is the main entry point for proof generation
      */
-    async generateOwnershipProof(nftId: string): Promise<ProofGenerationResult> {
+    async generateOwnershipProof(nftIdOrTxHash: string): Promise<ProofGenerationResult> {
         try {
-            console.log('🚀 Starting ZK proof generation for NFT:', nftId);
+            console.log('🚀 Starting ZK proof generation for:', nftIdOrTxHash);
             console.log(`   Mode: ${DEMO_MODE ? 'DEMO' : 'REAL'}`);
+
+            // Step 0: Resolve NFT ID (handles both NFT IDs and transaction hashes)
+            console.log('🔍 Resolving NFT identifier...');
+            const nftId = await this.resolveNFTId(nftIdOrTxHash);
+
+            if (!nftId) {
+                return {
+                    success: false,
+                    error: 'Could not resolve NFT from the provided identifier',
+                    metadata: {
+                        nftExists: false,
+                        metadataValid: false,
+                        packageHashMatches: false,
+                        timestamp: Date.now(),
+                        mode: DEMO_MODE ? 'demo' : 'real'
+                    }
+                }
+            }
+
+            console.log('✅ Resolved NFT ID:', nftId);
 
             // Step 1: Fetch NFT metadata from Cardano (or use demo data)
             console.log('📡 Fetching NFT metadata...');
@@ -106,11 +127,11 @@ export class ProofGenerator {
                 encryptedCidHash
             };
 
-            const proof = await midnightClient.generateOwnershipProof(inputs);
+            const proof = await snarkjsClient.generateOwnershipProof(inputs);
 
             // Step 4: Verify proof
             console.log('🔍 Verifying proof...');
-            const isValid = await midnightClient.verifyProof(proof.proof, proof.publicSignals);
+            const isValid = await snarkjsClient.verifyProof(proof.proof, proof.publicSignals);
 
             if (!isValid) {
                 return {
@@ -153,6 +174,97 @@ export class ProofGenerator {
                     mode: DEMO_MODE ? 'demo' : 'real'
                 }
             }
+        }
+    }
+
+    /**
+     * Resolve NFT identifier (handles both NFT IDs and transaction hashes)
+     */
+    private async resolveNFTId(identifier: string): Promise<string | null> {
+        // Check if it's a demo NFT
+        if (DEMO_MODE && DEMO_NFTS[identifier]) {
+            return identifier;
+        }
+
+        // Check if it's a transaction hash (64 hex characters)
+        const isTxHash = /^[a-f0-9]{64}$/i.test(identifier);
+
+        if (isTxHash) {
+            console.log('📜 Detected transaction hash, fetching NFT from transaction...');
+            return await this.getNFTFromTransaction(identifier);
+        }
+
+        // Already an NFT ID (policyId.assetName or policyIdassetName)
+        return identifier;
+    }
+
+    /**
+     * Get NFT ID from a transaction hash
+     */
+    private async getNFTFromTransaction(txHash: string): Promise<string | null> {
+        try {
+            const blockfrostUrl = process.env.NEXT_PUBLIC_BLOCKFROST_URL || 'https://cardano-preprod.blockfrost.io/api/v0';
+            const blockfrostKey = process.env.NEXT_PUBLIC_BLOCKFROST_API_KEY;
+
+            console.log('🔍 Fetching transaction:', txHash);
+            console.log('   Blockfrost URL:', blockfrostUrl);
+
+            if (!blockfrostKey) {
+                console.error('❌ Blockfrost API key not found');
+                return null;
+            }
+
+            // Fetch transaction UTXOs
+            const url = `${blockfrostUrl}/txs/${txHash}/utxos`;
+            console.log('📡 Calling:', url);
+
+            const response = await fetch(url, {
+                headers: {
+                    'project_id': blockfrostKey
+                }
+            });
+
+            console.log('📥 Response status:', response.status, response.statusText);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ Blockfrost API error:', response.status, errorText);
+                throw new Error(`Blockfrost API error: ${response.statusText} - ${errorText}`);
+            }
+
+            const utxos = await response.json();
+            console.log('📦 Transaction UTXOs:', JSON.stringify(utxos, null, 2));
+
+            // Look for NFT in outputs (minted assets)
+            for (const output of utxos.outputs) {
+                if (output.amount && output.amount.length > 1) {
+                    // Found an output with tokens (not just ADA)
+                    for (const token of output.amount) {
+                        if (token.unit !== 'lovelace') {
+                            // This is an NFT/token
+                            const assetId = token.unit;
+                            console.log('✅ Found NFT in transaction:', assetId);
+
+                            // Extract policy ID and asset name
+                            // Asset ID format: policyId (56 chars) + assetName (hex)
+                            const policyId = assetId.substring(0, 56);
+                            const assetNameHex = assetId.substring(56);
+
+                            console.log('   Policy ID:', policyId);
+                            console.log('   Asset Name (hex):', assetNameHex);
+
+                            // Return in format: policyId.assetName
+                            return `${policyId}.${assetNameHex}`;
+                        }
+                    }
+                }
+            }
+
+            console.warn('⚠️ No NFT found in transaction outputs');
+            return null;
+        } catch (error) {
+            console.error('❌ Error fetching NFT from transaction:', error);
+            return null;
         }
     }
 
@@ -221,18 +333,13 @@ export class ProofGenerator {
                 metadata.metadata?.encryptedCID ||
                 metadata.encryptedCID;
 
+
             if (!encryptedCID) {
-                // For demo mode, generate a mock encrypted CID
-                if (DEMO_MODE) {
-                    const mockCID = `QmMock${Date.now()}`;
-                    console.log('🔐 Using mock encrypted CID');
-                    return await midnightClient.hashData(mockCID);
-                }
                 throw new Error('Encrypted CID not found in NFT metadata');
             }
 
             // Hash the encrypted CID (this is what goes into the ZK circuit)
-            const hash = await midnightClient.hashData(encryptedCID);
+            const hash = await snarkjsClient.hashData(encryptedCID);
 
             console.log('🔐 Encrypted CID hash:', hash.substring(0, 16) + '...');
             return hash;
@@ -261,7 +368,7 @@ export class ProofGenerator {
      * Export proof as downloadable file
      */
     exportProofAsFile(proof: ZKProof, nftId: string): Blob {
-        const exportData = midnightClient.exportProof(proof, { nftId });
+        const exportData = snarkjsClient.exportProof(proof);
         return new Blob([exportData], { type: 'application/json' });
     }
 }

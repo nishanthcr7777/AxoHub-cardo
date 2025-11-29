@@ -1,0 +1,18 @@
+{
+  "circuit": "ownership",
+  "version": "1.0.0",
+  "description": "Midnight Compact circuit",
+  "publicInputs": [
+    "nftIdHash",
+    "encryptedCidHash"
+  ],
+  "privateInputs": [
+    "privateNftId",
+    "privateCidHash"
+  ],
+  "constraints": 1000,
+  "compiled": true,
+  "compiledAt": "2025-11-29T19:09:46.755Z",
+  "compiler": "compact-runtime",
+  "compilerVersion": "0.8.1"
+}
