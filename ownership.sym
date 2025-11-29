@@ -1,0 +1,8 @@
+1,3,0,main.nftId
+2,4,0,main.encryptedCid
+3,1,0,main.nftIdHash
+4,2,0,main.cidCommitment
+5,3,1,main.hasher1.in
+6,1,1,main.hasher1.out
+7,4,2,main.hasher2.in
+8,2,2,main.hasher2.out

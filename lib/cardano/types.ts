@@ -62,3 +62,45 @@ export interface ValidatorConfig {
     policyId: string
     referenceScriptUtxo?: string  // Optional: for reference script
 }
+
+// ============================================
+// Midnight ZK Proof Types
+// ============================================
+
+// ZK Ownership Proof
+export interface ZKOwnershipProof {
+    proof: any  // snarkjs proof object
+    publicSignals: string[]
+    timestamp: number
+    nftId: string
+    isValid: boolean
+}
+
+// ZK Verification Result
+export interface ZKVerificationResult {
+    verified: boolean
+    nftExists: boolean
+    metadataValid: boolean
+    packageHashMatches: boolean
+    proof: ZKOwnershipProof
+    timestamp: number
+    details: {
+        proofValid: boolean
+        publicSignalsValid: boolean
+        nftOnChain: boolean
+        cidHashMatches: boolean
+    }
+}
+
+// ZK Proof Generation Result
+export interface ZKProofGenerationResult {
+    success: boolean
+    proof?: ZKOwnershipProof
+    error?: string
+    metadata: {
+        nftExists: boolean
+        metadataValid: boolean
+        packageHashMatches: boolean
+        timestamp: number
+    }
+}
