@@ -27,7 +27,7 @@ const steps = [
   { id: 5, title: "Review & Submit", description: "Review and submit" },
 ]
 
-const compilers = ["solc-0.8.19", "solc-0.8.18", "solc-0.8.17", "solc-0.8.16", "solc-0.8.15"]
+const compilers = ["plutus-1.0.0", "plutus-1.1.0", "aiken-1.0.0", "aiken-1.1.0", "aiken-1.0.7"]
 
 const licenses = ["MIT", "Apache-2.0", "GPL-3.0", "BSD-3-Clause", "Unlicense"]
 
@@ -272,7 +272,7 @@ function SubmitSourceFormInner() {
                 {currentStep === 2 && (
                   <div className="space-y-6">
                     <div className="space-y-2">
-                      <Label className="text-white">Solidity Compiler</Label>
+                      <Label className="text-white">Cardano Compiler</Label>
                       <Select value={formData.compiler} onValueChange={(value) => updateFormData("compiler", value)}>
                         <SelectTrigger className="bg-slate-800/50 border-slate-600 text-white">
                           <SelectValue placeholder="Select compiler version" />

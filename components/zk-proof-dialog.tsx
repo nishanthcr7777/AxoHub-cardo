@@ -1,7 +1,7 @@
 "use client"
 
 /**
- * ZK Proof Dialog - Generate and display Midnight ZK proofs
+ * ZK Proof Dialog - Generate and display ZK proofs
  */
 
 import { useState } from "react"

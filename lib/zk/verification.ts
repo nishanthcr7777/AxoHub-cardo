@@ -189,7 +189,7 @@ export class ProofVerifier {
         const status = result.verified ? '✅ VERIFIED' : '❌ FAILED'
 
         return `
-Midnight ZK Proof Verification Report
+ZK Proof Verification Report
 ======================================
 
 Status: ${status}

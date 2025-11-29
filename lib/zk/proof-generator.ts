@@ -121,7 +121,7 @@ export class ProofGenerator {
             const encryptedCidHash = await this.extractEncryptedCidHash(metadata);
 
             // Step 3: Generate ZK proof
-            console.log('🌑 Generating Midnight ZK proof...');
+            console.log('🌑 Generating ZK proof...');
             const inputs: ZKProofInputs = {
                 nftId,
                 encryptedCidHash

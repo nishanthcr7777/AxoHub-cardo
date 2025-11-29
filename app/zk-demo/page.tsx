@@ -1,7 +1,7 @@
 "use client"
 
 /**
- * Midnight ZK Proof Demo Page
+ * ZK Proof Demo Page
  * Showcases Zero-Knowledge proof of NFT ownership
  */
 
@@ -31,7 +31,7 @@ export default function ZKDemoPage() {
             title: "Auditor Verifies Access",
             steps: [
                 "Auditor enters NFT token ID",
-                "Clicks 'ZK Verify Access Key (Midnight)'",
+                "Clicks 'ZK Verify Access Key'",
                 "System generates ZK proof without revealing CID",
                 "Auditor sees verification ✅ but CID stays private"
             ],
@@ -63,7 +63,7 @@ export default function ZKDemoPage() {
                             className="text-3xl font-bold text-white flex items-center gap-3"
                         >
                             <span>🌑</span>
-                            Midnight ZK Proof Demo
+                            ZK Proof Demo
                         </motion.h1>
                         <motion.p
                             initial={{ opacity: 0, x: -20 }}
@@ -92,7 +92,7 @@ export default function ZKDemoPage() {
                                         </h2>
                                         <p className="text-slate-300 mb-6">
                                             Prove you own an NFT and have access to a private package without revealing the encrypted IPFS CID or source code.
-                                            This uses <strong>Midnight's Compact Language</strong> for real Zero-Knowledge proofs.
+                                            This uses <strong>ZK Circuit Language</strong> for real Zero-Knowledge proofs.
                                         </p>
 
                                         <div className="flex flex-wrap gap-3 mb-6">
@@ -160,7 +160,7 @@ export default function ZKDemoPage() {
 
                         {/* How It Works */}
                         <Card className="p-6 bg-black/20 backdrop-blur-sm border-white/10">
-                            <h3 className="text-xl font-bold text-white mb-4">How Midnight ZK Works</h3>
+                            <h3 className="text-xl font-bold text-white mb-4">How ZK Proofs Work</h3>
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div>
                                     <h4 className="text-sm font-semibold text-purple-300 mb-3 flex items-center gap-2">
@@ -212,8 +212,8 @@ export default function ZKDemoPage() {
                             <h3 className="text-xl font-bold text-white mb-4">Technical Stack</h3>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 {[
-                                    { name: "Midnight ZK-WASM", desc: "Client-side proving" },
-                                    { name: "Midnight Compact", desc: "Native ZK Contract" },
+                                    { name: "ZK-WASM", desc: "Client-side proving" },
+                                    { name: "ZK Circuits", desc: "Native ZK Contract" },
                                     { name: "Cardano NFTs", desc: "Access control" },
                                     { name: "IPFS Encryption", desc: "Content privacy" }
                                 ].map((tech) => (

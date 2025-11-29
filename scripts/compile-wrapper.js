@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * Midnight Compact Compiler Wrapper
- * Uses the @midnight-ntwrk/compact-runtime package to compile .compact files
+ * ZK Circuit Compiler Wrapper
+ * Uses ZK circuit compilation tools
  */
 
 const fs = require('fs');
@@ -19,7 +19,7 @@ if (args.length < 3 || args[0] !== 'compile') {
 const inputFile = args[1];
 const outputDir = args[2];
 
-console.log('🌑 Midnight Compact Compiler');
+console.log('🌑 ZK Circuit Compiler');
 console.log('============================');
 console.log(`Input: ${inputFile}`);
 console.log(`Output: ${outputDir}`);
@@ -46,7 +46,7 @@ try {
     const compactRuntime = require('@midnight-ntwrk/compact-runtime');
 
     console.log('✅ Compact runtime loaded');
-    console.log('⚠️  Note: Full compilation requires Midnight Network compiler');
+    console.log('⚠️  Note: Full compilation requires ZK circuit compiler');
     console.log('   Creating placeholder artifacts for development...');
 
     // Create placeholder WASM (minimal valid WASM module)
@@ -62,7 +62,7 @@ try {
     const circuitMetadata = {
         circuit: path.basename(outputDir),
         version: "1.0.0",
-        description: "Midnight Compact circuit",
+        description: "ZK circuit",
         publicInputs: ["nftIdHash", "encryptedCidHash"],
         privateInputs: ["privateNftId", "privateCidHash"],
         constraints: 1000,
@@ -96,8 +96,8 @@ try {
     console.log('✅ Compilation successful!');
     console.log('');
     console.log('⚠️  IMPORTANT: These are development artifacts.');
-    console.log('   For production ZK proofs, you need the full Midnight compiler.');
-    console.log('   Contact Midnight Network for compiler access.');
+    console.log('   For production ZK proofs, you need the full ZK compiler.');
+    console.log('   Contact your ZK tooling provider for compiler access.');
 
 } catch (error) {
     console.error('❌ Compilation failed:', error.message);

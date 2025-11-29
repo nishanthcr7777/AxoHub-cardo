@@ -3,7 +3,7 @@ import { proofVerifier } from '@/lib/zk/verification'
 
 /**
  * POST /api/zk/verify-proof
- * Verify a Midnight ZK proof
+ * Verify a ZK proof
  */
 export async function POST(request: NextRequest) {
     try {

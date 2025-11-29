@@ -1,7 +1,7 @@
 "use client"
 
 /**
- * ZK Verify Button - Trigger Midnight ZK proof generation
+ * ZK Verify Button - Trigger ZK proof generation
  */
 
 import { useState } from "react"

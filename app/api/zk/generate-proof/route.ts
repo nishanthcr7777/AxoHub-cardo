@@ -3,7 +3,7 @@ import { proofGenerator } from '@/lib/zk/proof-generator'
 
 /**
  * POST /api/zk/generate-proof
- * Generate a Midnight ZK proof of NFT ownership
+ * Generate a ZK proof of NFT ownership
  */
 export async function POST(request: NextRequest) {
     try {

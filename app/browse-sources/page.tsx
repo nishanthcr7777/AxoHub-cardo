@@ -41,7 +41,7 @@ export default function BrowseSourcesPage() {
                 ? "Explore published smart contracts on Cardano"
                 : activeTab === "private"
                   ? "Unlock private source code with your NFT access key"
-                  : "Verify ownership with Midnight Zero-Knowledge proofs"}
+                  : "Verify ownership with Zero-Knowledge proofs"}
             </motion.p>
           </Header>
 
@@ -92,10 +92,10 @@ export default function BrowseSourcesPage() {
 
                         <div className="space-y-2">
                           <h2 className="text-3xl font-bold text-white">
-                            Verify Ownership via Midnight
+                            Verify Ownership via ZK Proof
                           </h2>
                           <p className="text-slate-400 text-lg">
-                            Use <strong className="text-purple-300">Midnight's Compact ZK Proofs</strong> to verify NFT ownership and package access rights without revealing sensitive data or encrypted CIDs.
+                            Use <strong className="text-purple-300">ZK Proofs</strong> to verify NFT ownership and package access rights without revealing sensitive data or encrypted CIDs.
                           </p>
                         </div>
 

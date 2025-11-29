@@ -22,7 +22,7 @@ export function SearchFilters() {
     clearAllFilters,
   } = useFilters()
 
-  const compilers = ["All Compilers", "solc-0.8.19", "solc-0.8.18", "solc-0.8.17", "solc-0.8.16"]
+  const compilers = ["All Compilers", "plutus-1.0.0", "plutus-1.1.0", "aiken-1.0.0", "aiken-1.1.0"]
   const licenses = ["All Licenses", "MIT", "Apache-2.0", "GPL-3.0", "BSD-3-Clause", "Unlicense"]
 
   return (

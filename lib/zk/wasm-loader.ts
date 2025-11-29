@@ -1,5 +1,5 @@
 /**
- * WASM Loader for Midnight Compact Artifacts
+ * WASM Loader for ZK Circuit Artifacts
  * Loads compiled WASM modules in both browser and Node.js environments
  */
 
@@ -99,7 +99,7 @@ export async function loadWasm(path: string): Promise<WasmModule> {
 }
 
 /**
- * Load Midnight circuit artifacts
+ * Load ZK circuit artifacts
  */
 export async function loadCircuitArtifacts(contractName: string) {
     const basePath = `/contract/artifacts/${contractName}`;
