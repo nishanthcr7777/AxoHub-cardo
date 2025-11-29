@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { CodeEditor } from "@/components/code-editor"
-import { ipfsMock } from "@/lib/ipfs-mock"
+
 import { Skeleton } from "@/components/ui/skeleton"
 
 interface SourceContract {
@@ -35,15 +35,19 @@ export function SourceModal({ source, isOpen, onClose }: SourceModalProps) {
   useEffect(() => {
     if (source && isOpen) {
       setIsLoading(true)
-      ipfsMock
-        .getText(source.ipfsCID)
-        .then((code) => {
+      // Use public IPFS gateway
+      const gatewayUrl = "https://ipfs.io/ipfs/"
+
+      fetch(`${gatewayUrl}${source.ipfsCID}`)
+        .then(async (response) => {
+          if (!response.ok) throw new Error("Failed to fetch from IPFS")
+          const code = await response.text()
           setSourceCode(code)
           setIsLoading(false)
         })
-        .catch((err) => {
+        .catch((err: any) => {
           console.error("[v0] Failed to fetch source code:", err)
-          setSourceCode("// Failed to load source code from IPFS")
+          setSourceCode("// Failed to load source code from IPFS. The content might not be available on the public gateway yet.")
           setIsLoading(false)
         })
     }
@@ -199,7 +203,7 @@ export function SourceModal({ source, isOpen, onClose }: SourceModalProps) {
                       </div>
                     ) : (
                       <div className="h-[calc(100%-2rem)] overflow-hidden">
-                        <CodeEditor value={sourceCode} onChange={() => {}} language="solidity" readOnly />
+                        <CodeEditor value={sourceCode} onChange={() => { }} language="solidity" readOnly />
                       </div>
                     )}
                   </div>

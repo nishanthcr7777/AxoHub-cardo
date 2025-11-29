@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  hydra-node:
+    image: inputoutput/hydra-node:latest
+    container_name: axohub-hydra
+    ports:
+      - "4001:4001"  # API port
+      - "5001:5001"  # WebSocket port
+    environment:
+      - HYDRA_API_HOST=0.0.0.0
+      - HYDRA_API_PORT=4001
+      - HYDRA_NETWORK=preprod
+    volumes:
+      - ./hydra-data:/data
+    command: >
+      hydra-node
+      --node-socket /data/node.socket
+      --testnet-magic 1
+      --api-host 0.0.0.0
+      --api-port 4001
+      --hydra-signing-key /data/hydra.sk
+      --cardano-signing-key /data/cardano.sk
+    restart: unless-stopped
+    networks:
+      - hydra-network
+
+networks:
+  hydra-network:
+    driver: bridge
