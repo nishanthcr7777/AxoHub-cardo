@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   hydra-node:
-    image: inputoutput/hydra-node:latest
+    image: ghcr.io/cardano-scaling/hydra-node:latest
     container_name: axohub-hydra
     ports:
       - "4001:4001"  # API port
