@@ -1,4 +1,4 @@
-# Hydra Docker Setup - Complete Guide
+ # Hydra Docker Setup - Complete Guide
 
 ## ✅ Correct Docker Image Found
 
@@ -9,19 +9,9 @@
 
 ## 📦 Updated Docker Compose
 
-The `docker-compose.hydra.yml` has been updated with the correct image:
+The `docker-compose.hydra.yml` has been updated with a complete setup including Cardano node and Hydra node.
 
-```yaml
-version: '3.8'
-
-services:
-  hydra-node:
-    image: ghcr.io/cardano-scaling/hydra-node:latest
-    container_name: axohub-hydra
-    ports:
-      - "4001:4001"  # API port
-      - "5001:5001"  # WebSocket port
-```
+**See [HYDRA-DOCKER-QUICKSTART.md](./HYDRA-DOCKER-QUICKSTART.md) for detailed setup instructions.**
 
 ## ⚠️ Current Challenge
 
@@ -160,20 +150,40 @@ Visit: `http://localhost:3000/version-history`
 
 ## 🚀 Quick Start Commands
 
+### Full Docker Setup (Recommended)
+
 ```bash
-# Pull the correct image
-docker pull ghcr.io/cardano-scaling/hydra-node:latest
+# Windows
+.\hydra-setup.ps1
+docker compose -f docker-compose.hydra.yml up -d
 
-# For mock testing (recommended)
-# 1. Create mock-hydra-server.js (see above)
-# 2. Install ws: npm install ws
-# 3. Run: node mock-hydra-server.js
-# 4. Start app: npm run dev
+# Linux/Mac
+chmod +x hydra-setup.sh
+./hydra-setup.sh
+docker compose -f docker-compose.hydra.yml up -d
+```
 
-# For UI testing only
+### Mock Server (Development)
+
+```bash
+# Install dependencies
+npm install ws
+
+# Run mock server
+node mock-hydra-server.js
+
+# In another terminal, start app
+npm run dev
+```
+
+### UI Testing Only
+
+```bash
 npm run dev
 # Visit http://localhost:3000/version-history
 ```
+
+**For complete setup instructions, see [HYDRA-DOCKER-QUICKSTART.md](./HYDRA-DOCKER-QUICKSTART.md)**
 
 ## 📚 Resources
 

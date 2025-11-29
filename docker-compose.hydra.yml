@@ -1,21 +1,64 @@
-version: '3.8'
-
 services:
+  cardano-node:
+    image: ghcr.io/intersectmbo/cardano-node:8.9.2
+    container_name: axohub-cardano-node
+    volumes:
+      - cardano-node-data:/data
+      - cardano-node-ipc:/ipc
+    environment:
+      - NETWORK=preprod
+    ports:
+      - "3001:3001"
+    healthcheck:
+      test: ["CMD-SHELL", "test -S /ipc/node.socket"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
   hydra-node:
     image: ghcr.io/cardano-scaling/hydra-node:latest
     container_name: axohub-hydra
+    depends_on:
+      cardano-node:
+        condition: service_healthy
     ports:
       - "4001:4001"  # API port
       - "5001:5001"  # WebSocket port
+    volumes:
+      - ./hydra-keys:/keys
+      - cardano-node-ipc:/ipc
+      - ./hydra-data:/data
     environment:
       - HYDRA_API_HOST=0.0.0.0
       - HYDRA_API_PORT=4001
       - HYDRA_NETWORK=preprod
-    volumes:
-      - ./hydra-data:/data
-    command: >
-      hydra-node
-      --node-socket /data/node.socket
-      --testnet-magic 1
-      --api-host 0.0.0.0
-      --api-port 4001
+    command:
+      - --node-id
+      - "1"
+      - --api-host
+      - "0.0.0.0"
+      - --api-port
+      - "4001"
+      - --listen
+      - "0.0.0.0:5001"
+      - --node-socket
+      - /ipc/node.socket
+      - --testnet-magic
+      - "1"
+      - --network
+      - preprod
+      - --hydra-signing-key
+      - /keys/hydra.sk
+      - --cardano-signing-key
+      - /keys/cardano.sk
+      - --ledger-protocol-parameters
+      - /keys/protocol-parameters.json
+    restart: unless-stopped
+
+volumes:
+  cardano-node-data:
+    driver: local
+  cardano-node-ipc:
+    driver: local
