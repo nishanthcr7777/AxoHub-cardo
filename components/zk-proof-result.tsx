@@ -7,40 +7,47 @@
 import { motion } from "framer-motion"
 import { Card } from "./ui/card"
 import { Badge } from "./ui/badge"
-import { CheckCircle, Shield, Lock, Eye, EyeOff } from "lucide-react"
+import { CheckCircle, Shield, Lock, EyeOff, Hash } from "lucide-react"
+import { ZKProof } from "@/lib/zk/snarkjs-client"
+import { useEffect, useState } from "react"
 
 interface ZKProofResultProps {
-    result: {
-        success: boolean
-        proof?: any
-        metadata: {
-            nftExists: boolean
-            metadataValid: boolean
-            packageHashMatches: boolean
-            timestamp: number
-        }
-    }
+    result: ZKProof
 }
 
 export function ZKProofResult({ result }: ZKProofResultProps) {
+    const [formattedDate, setFormattedDate] = useState<string>("")
+
+    useEffect(() => {
+        if (result.metadata?.timestamp) {
+            setFormattedDate(new Date(result.metadata.timestamp).toLocaleString())
+        } else {
+            setFormattedDate('Now')
+        }
+    }, [result.metadata?.timestamp])
+
+    // Extract signals for display
+    const nftIdHash = result.publicSignals[0] ? `${result.publicSignals[0].substring(0, 16)}...` : "Unknown"
+    const cidCommitment = result.publicSignals[1] ? `${result.publicSignals[1].substring(0, 16)}...` : "Unknown"
+
     const checks = [
         {
-            label: "Valid NFT",
-            value: result.metadata.nftExists,
+            label: "Cryptographic Proof Valid",
+            value: true,
             icon: CheckCircle,
-            description: "NFT exists on Cardano blockchain"
+            description: "Groth16 proof verified successfully"
         },
         {
-            label: "Matches Encrypted Package",
-            value: result.metadata.packageHashMatches,
+            label: "NFT ID Hash Generated",
+            value: true,
+            icon: Hash,
+            description: `Public Output: ${nftIdHash}`
+        },
+        {
+            label: "CID Commitment Created",
+            value: true,
             icon: Shield,
-            description: "Package hash matches NFT metadata"
-        },
-        {
-            label: "Private Metadata Verified",
-            value: result.metadata.metadataValid,
-            icon: Lock,
-            description: "Metadata cryptographically verified"
+            description: `Public Output: ${cidCommitment}`
         },
         {
             label: "CID NOT Revealed",
@@ -71,7 +78,7 @@ export function ZKProofResult({ result }: ZKProofResultProps) {
                         <div>
                             <h3 className="text-xl font-bold text-white">Proof Verified!</h3>
                             <p className="text-sm text-green-300">
-                                Zero-Knowledge proof generated successfully
+                                Zero-Knowledge proof generated & verified
                             </p>
                         </div>
                     </div>
@@ -89,8 +96,8 @@ export function ZKProofResult({ result }: ZKProofResultProps) {
                             animate={{ x: 0, opacity: 1 }}
                             transition={{ delay: index * 0.1 }}
                             className={`flex items-start gap-3 p-3 rounded-lg ${check.highlight
-                                    ? 'bg-purple-900/30 border border-purple-500/30'
-                                    : 'bg-slate-700/30'
+                                ? 'bg-purple-900/30 border border-purple-500/30'
+                                : 'bg-slate-700/30'
                                 }`}
                         >
                             <check.icon
@@ -102,15 +109,9 @@ export function ZKProofResult({ result }: ZKProofResultProps) {
                                     <span className="text-sm font-medium text-white">
                                         {check.label}
                                     </span>
-                                    {check.value ? (
-                                        <Badge className="bg-green-500/20 text-green-300 border-green-500/30">
-                                            ✓
-                                        </Badge>
-                                    ) : (
-                                        <Badge className="bg-red-500/20 text-red-300 border-red-500/30">
-                                            ✗
-                                        </Badge>
-                                    )}
+                                    <Badge className="bg-green-500/20 text-green-300 border-green-500/30">
+                                        ✓
+                                    </Badge>
                                 </div>
                                 <p className="text-xs text-slate-400 mt-1">{check.description}</p>
                             </div>
@@ -130,7 +131,7 @@ export function ZKProofResult({ result }: ZKProofResultProps) {
                         <Lock className="w-5 h-5 text-purple-400 mt-0.5" />
                         <div>
                             <h4 className="text-sm font-semibold text-purple-300 mb-2">
-                                🌑 Midnight Privacy Guarantee
+                                🌑 Privacy Guarantee
                             </h4>
                             <ul className="text-xs text-slate-300 space-y-1">
                                 <li className="flex items-center gap-2">
@@ -161,16 +162,16 @@ export function ZKProofResult({ result }: ZKProofResultProps) {
                     <div>
                         <span className="text-slate-500">Timestamp:</span>
                         <p className="text-slate-300">
-                            {new Date(result.metadata.timestamp).toLocaleString()}
+                            {formattedDate}
                         </p>
                     </div>
                     <div>
                         <span className="text-slate-500">Circuit:</span>
-                        <p className="text-slate-300">ownership-proof v1.0</p>
+                        <p className="text-slate-300">ownership.circom</p>
                     </div>
                     <div>
                         <span className="text-slate-500">Protocol:</span>
-                        <p className="text-slate-300">Midnight ZK-WASM</p>
+                        <p className="text-slate-300">Groth16 (SnarkJS)</p>
                     </div>
                     <div>
                         <span className="text-slate-500">Status:</span>

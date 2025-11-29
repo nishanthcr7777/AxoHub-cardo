@@ -13,13 +13,15 @@ import { Card } from "./ui/card"
 import { Loader2, CheckCircle, XCircle, Download, Share2 } from "lucide-react"
 import { toast } from "sonner"
 import { ZKProofResult } from "@/components/zk-proof-result"
-import { CompactProof } from "@/lib/zk/midnight-client"
+import { snarkjsClient, ZKProof } from "@/lib/zk/snarkjs-client"
+import { queryAccessNFT } from "@/lib/cardano/nft"
+import { useCardanoWallet } from "@/contexts/CardanoWalletContext"
 
 interface ZKProofDialogProps {
     isOpen: boolean
     onClose: () => void
     initialNftId?: string
-    onProofGenerated?: (proof: CompactProof) => void
+    onProofGenerated?: (proof: ZKProof) => void
     onGeneratingChange?: (isGenerating: boolean) => void
 }
 
@@ -32,16 +34,17 @@ export function ZKProofDialog({
     onProofGenerated,
     onGeneratingChange
 }: ZKProofDialogProps) {
-    const [nftId, setNftId] = useState(initialNftId)
+    const { lucid } = useCardanoWallet()
+    const [accessKey, setAccessKey] = useState(initialNftId)
     const [stage, setStage] = useState<ProofStage>('input')
     const [progress, setProgress] = useState(0)
     const [progressMessage, setProgressMessage] = useState("")
-    const [proofResult, setProofResult] = useState<any>(null)
+    const [proofResult, setProofResult] = useState<ZKProof | null>(null)
     const [error, setError] = useState("")
 
     const handleGenerateProof = async () => {
-        if (!nftId.trim()) {
-            toast.error("Please enter an NFT ID or transaction hash")
+        if (!accessKey.trim()) {
+            toast.error("Please enter the NFT Access Key")
             return
         }
 
@@ -51,40 +54,57 @@ export function ZKProofDialog({
         onGeneratingChange?.(true)
 
         try {
-            // Step 1: Fetch NFT metadata
-            setProgressMessage("Fetching NFT metadata from Cardano...")
-            setProgress(25)
-            await new Promise(resolve => setTimeout(resolve, 800))
+            // Step 1: Fetch Metadata (Secret)
+            setProgressMessage("Fetching encrypted secret from chain...")
+            setProgress(10)
 
-            // Step 2: Extract encrypted CID hash
-            setProgressMessage("Extracting encrypted CID hash...")
-            setProgress(50)
-            await new Promise(resolve => setTimeout(resolve, 600))
+            let encryptedCid = ""
 
-            // Step 3: Generate ZK proof
-            setProgressMessage("Generating Midnight ZK proof...")
-            setProgress(75)
-
-            const response = await fetch('/api/zk/generate-proof', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nftId })
-            })
-
-            if (!response.ok) {
-                const errorData = await response.json()
-                throw new Error(errorData.error || 'Failed to generate proof')
+            // Handle Demo Case
+            if (accessKey === "demo.test1") {
+                await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate network delay
+                encryptedCid = "QmTest1234567890EncryptedCIDSecretKey"
+            } else {
+                if (!lucid) {
+                    throw new Error("Please connect your wallet to fetch metadata")
+                }
+                const metadata = await queryAccessNFT(accessKey.trim(), lucid)
+                if (!metadata) {
+                    throw new Error("Invalid Access Key or Metadata not found")
+                }
+                encryptedCid = metadata.encryptedCID
             }
 
-            const result = await response.json()
+            if (!encryptedCid) {
+                throw new Error("Could not retrieve encrypted secret")
+            }
 
-            // Step 4: Verify proof
-            setProgressMessage("Verifying proof...")
-            setProgress(90)
+            // Step 2: Initialize SnarkJS
+            setProgressMessage("Initializing SnarkJS...")
+            setProgress(30)
             await new Promise(resolve => setTimeout(resolve, 500))
 
+            // Step 3: Generate Proof
+            setProgressMessage("Generating ZK proof (this may take a moment)...")
+            setProgress(50)
+
+            const result = await snarkjsClient.generateOwnershipProof({
+                nftId: accessKey.trim(),
+                encryptedCidHash: encryptedCid
+            })
+
+            // Step 4: Verify proof
+            setProgressMessage("Verifying proof on-client...")
+            setProgress(80)
+
+            const isValid = await snarkjsClient.verifyProof(result.proof, result.publicSignals)
+
+            if (!isValid) {
+                throw new Error("Generated proof failed verification")
+            }
+
             setProgress(100)
-            setProgressMessage("Proof generated successfully!")
+            setProgressMessage("Proof generated & verified successfully!")
 
             // Success!
             setProofResult(result)
@@ -96,7 +116,7 @@ export function ZKProofDialog({
             console.error("Proof generation failed:", err)
             setError(err.message || "Failed to generate proof")
             setStage('error')
-            toast.error("Failed to generate ZK proof")
+            toast.error(err.message || "Failed to generate ZK proof")
         } finally {
             onGeneratingChange?.(false)
         }
@@ -108,6 +128,7 @@ export function ZKProofDialog({
         setProgressMessage("")
         setProofResult(null)
         setError("")
+        setAccessKey("")
     }
 
     const handleDownloadProof = () => {
@@ -119,7 +140,7 @@ export function ZKProofDialog({
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-        a.download = `zk-proof-${nftId}.json`
+        a.download = `zk-proof-${accessKey}.json`
         a.click()
         URL.revokeObjectURL(url)
         toast.success("Proof downloaded!")
@@ -131,10 +152,10 @@ export function ZKProofDialog({
                 <DialogHeader>
                     <DialogTitle className="text-white flex items-center gap-2">
                         <span>🌑</span>
-                        Midnight ZK Proof Verification
+                        ZK Proof Verification
                     </DialogTitle>
                     <DialogDescription className="text-slate-400">
-                        Generate a Zero-Knowledge proof of NFT ownership without revealing encrypted CID
+                        Generate a Zero-Knowledge proof of ownership using your NFT Access Key.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -142,20 +163,19 @@ export function ZKProofDialog({
                     {/* Input Stage */}
                     {stage === 'input' && (
                         <>
-                            <div>
-                                <Label className="text-slate-300">NFT Token ID</Label>
-                                <Input
-                                    value={nftId}
-                                    onChange={(e) => setNftId(e.target.value)}
-                                    placeholder="demo.test1 or policyId.assetName"
-                                    className="bg-slate-800 border-slate-700 text-white mt-2"
-                                />
-                                <p className="text-xs text-slate-500 mt-1">
-                                    Try demo NFTs: <code className="text-purple-400">demo.test1</code> or <code className="text-purple-400">demo.test2</code>
-                                </p>
-                                <p className="text-xs text-slate-500">
-                                    Or use real NFT format: policyId.assetName
-                                </p>
+                            <div className="space-y-4">
+                                <div>
+                                    <Label className="text-slate-300">NFT Access Key (Transaction Hash)</Label>
+                                    <Input
+                                        value={accessKey}
+                                        onChange={(e) => setAccessKey(e.target.value)}
+                                        placeholder="Paste your NFT Access Key here..."
+                                        className="bg-slate-800 border-slate-700 text-white mt-2 font-mono text-sm"
+                                    />
+                                    <p className="text-xs text-slate-500 mt-1">
+                                        The app will automatically fetch the encrypted secret from the chain using this key.
+                                    </p>
+                                </div>
                             </div>
 
                             <Card className="p-4 bg-purple-900/20 border-purple-500/30">
@@ -163,11 +183,10 @@ export function ZKProofDialog({
                                     🔐 Privacy Guarantee
                                 </h4>
                                 <ul className="text-xs text-slate-300 space-y-1">
-                                    <li>✅ Proves NFT ownership</li>
-                                    <li>✅ Verifies package exists</li>
-                                    <li>❌ Does NOT reveal encrypted CID</li>
-                                    <li>❌ Does NOT expose source code</li>
-                                    <li>❌ Does NOT show private metadata</li>
+                                    <li>✅ Automatically fetches encrypted secret from chain</li>
+                                    <li>✅ Verifies ownership mathematically</li>
+                                    <li>❌ Does NOT reveal your secret key</li>
+                                    <li>❌ Does NOT expose the underlying data</li>
                                 </ul>
                             </Card>
 
@@ -176,7 +195,16 @@ export function ZKProofDialog({
                                     onClick={handleGenerateProof}
                                     className="flex-1 bg-purple-600 hover:bg-purple-700"
                                 >
-                                    Generate ZK Proof
+                                    Generate & Verify Proof
+                                </Button>
+                                <Button
+                                    onClick={() => {
+                                        setAccessKey("demo.test1")
+                                    }}
+                                    variant="outline"
+                                    className="border-slate-700"
+                                >
+                                    Use Demo Data
                                 </Button>
                                 <Button
                                     onClick={onClose}
@@ -211,7 +239,7 @@ export function ZKProofDialog({
                             </Card>
 
                             <p className="text-xs text-slate-500 text-center">
-                                This may take a few seconds...
+                                This process runs entirely in your browser.
                             </p>
                         </div>
                     )}
@@ -234,7 +262,7 @@ export function ZKProofDialog({
                                     variant="outline"
                                     className="border-slate-700"
                                 >
-                                    Generate Another
+                                    Verify Another
                                 </Button>
                             </div>
                         </div>

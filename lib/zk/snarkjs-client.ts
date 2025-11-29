@@ -3,10 +3,6 @@
  * Simple, production-ready zero-knowledge proofs
  */
 
-const snarkjs = require('snarkjs');
-const fs = require('fs');
-const path = require('path');
-
 export type SnarkProof = {
     pi_a: string[];
     pi_b: string[][];
@@ -37,43 +33,28 @@ export class SnarkJSClient {
     private vkeyPath: string;
 
     constructor() {
-        const circuitsDir = path.join(process.cwd(), 'public', 'circuits');
-        this.wasmPath = path.join(circuitsDir, 'ownership.wasm');
-        this.zkeyPath = path.join(circuitsDir, 'ownership_final.zkey');
-        this.vkeyPath = path.join(circuitsDir, 'verification_key.json');
+        // In browser, these are relative URLs to the public folder
+        this.wasmPath = '/circuits/ownership.wasm';
+        this.zkeyPath = '/circuits/ownership_final.zkey';
+        this.vkeyPath = '/circuits/verification_key.json';
 
         console.log('🔐 SnarkJS Client initialized');
-        console.log('   WASM:', this.wasmPath);
-        console.log('   ZKey:', this.zkeyPath);
     }
 
     /**
-     * Initialize the client (check if circuit files exist)
+     * Initialize the client
      */
     async initialize(): Promise<void> {
         if (this.initialized) return;
+        console.log('🔧 Initializing SnarkJS client...');
 
-        try {
-            console.log('🔧 Initializing SnarkJS client...');
-
-            // Check if circuit files exist
-            const wasmExists = fs.existsSync(this.wasmPath);
-            const zkeyExists = fs.existsSync(this.zkeyPath);
-
-            if (!wasmExists || !zkeyExists) {
-                console.warn('⚠️  Circuit files not found. Run: npm run circuit:compile');
-                console.warn('   WASM exists:', wasmExists);
-                console.warn('   ZKey exists:', zkeyExists);
-            } else {
-                console.log('✅ Circuit files found');
-            }
-
-            this.initialized = true;
-            console.log('✅ SnarkJS client initialized');
-        } catch (error) {
-            console.error('❌ Failed to initialize SnarkJS client:', error);
-            throw error;
+        // Check if snarkjs is loaded
+        if (typeof window !== 'undefined' && !(window as any).snarkjs) {
+            console.warn('⚠️ snarkjs not found on window object. Waiting for script load...');
+            // Simple retry logic could be added here
         }
+
+        this.initialized = true;
     }
 
     /**
@@ -87,23 +68,61 @@ export class SnarkJSClient {
         console.log(`   - CID Hash: ${inputs.encryptedCidHash.substring(0, 16)}...`);
 
         try {
-            // Convert inputs to BigInt for circuit
-            const circuitInputs = {
-                nftId: this.stringToBigInt(inputs.nftId),
-                encryptedCid: this.stringToBigInt(inputs.encryptedCidHash)
+            // Access global snarkjs
+            const snarkjs = (window as any).snarkjs;
+
+            if (!snarkjs) {
+                throw new Error("SnarkJS library not loaded. Please refresh the page.");
+            }
+
+            // Construct absolute URLs
+            const origin = window.location.origin;
+            const wasmUrl = `${origin}${this.wasmPath}`;
+            const zkeyUrl = `${origin}${this.zkeyPath}`;
+
+            console.log(`🔍 Checking artifacts at:`);
+            console.log(`   - WASM: ${wasmUrl}`);
+            console.log(`   - ZKey: ${zkeyUrl}`);
+
+            // Verify artifacts are accessible
+            const checkArtifact = async (url: string, name: string) => {
+                const res = await fetch(url, { method: 'HEAD' });
+                if (!res.ok) {
+                    throw new Error(`Failed to fetch ${name}: ${res.status} ${res.statusText}`);
+                }
+                const contentType = res.headers.get('content-type');
+                console.log(`   ✅ ${name} found (${contentType})`);
+                if (contentType && contentType.includes('text/html')) {
+                    throw new Error(`${name} returned HTML (likely 404/error page) instead of binary.`);
+                }
             };
 
-            console.log('📊 Circuit inputs prepared');
-            console.log('   nftId (BigInt):', circuitInputs.nftId.toString());
-            console.log('   encryptedCid (BigInt):', circuitInputs.encryptedCid.toString());
+            await checkArtifact(wasmUrl, 'WASM');
+            await checkArtifact(zkeyUrl, 'ZKey');
+
+            // Convert inputs to BigInt then string (decimal) for snarkjs
+            const circuitInputs = {
+                nftId: this.stringToBigInt(inputs.nftId).toString(),
+                encryptedCid: this.stringToBigInt(inputs.encryptedCidHash).toString()
+            };
+
+            console.log('📊 Circuit inputs prepared:', circuitInputs);
 
             // Generate proof using Groth16
             console.log('🔐 Generating Groth16 proof...');
-            const { proof, publicSignals } = await snarkjs.groth16.fullProve(
+
+            // Add timeout race
+            const proofPromise = snarkjs.groth16.fullProve(
                 circuitInputs,
-                this.wasmPath,
-                this.zkeyPath
+                wasmUrl,
+                zkeyUrl
             );
+
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("Proof generation timed out after 20s")), 20000)
+            );
+
+            const { proof, publicSignals } = await Promise.race([proofPromise, timeoutPromise]) as any;
 
             console.log('✅ Proof generated successfully');
             console.log('   Public signals:', publicSignals);
@@ -130,8 +149,16 @@ export class SnarkJSClient {
         try {
             console.log('🔍 Verifying proof...');
 
-            // Load verification key
-            const vKey = JSON.parse(fs.readFileSync(this.vkeyPath, 'utf8'));
+            // Access global snarkjs
+            const snarkjs = (window as any).snarkjs;
+
+            if (!snarkjs) {
+                throw new Error("SnarkJS library not loaded");
+            }
+
+            // Fetch verification key
+            const vKeyResponse = await fetch(this.vkeyPath);
+            const vKey = await vKeyResponse.json();
 
             // Verify using Groth16
             const isValid = await snarkjs.groth16.verify(vKey, publicSignals, proof);
@@ -148,8 +175,11 @@ export class SnarkJSClient {
      * Convert string to BigInt for circuit input
      */
     private stringToBigInt(str: string): bigint {
-        // Convert string to hex, then to BigInt
-        const hex = Buffer.from(str).toString('hex');
+        // Browser-compatible string to hex conversion
+        let hex = '';
+        for (let i = 0; i < str.length; i++) {
+            hex += str.charCodeAt(i).toString(16).padStart(2, '0');
+        }
         return BigInt('0x' + hex);
     }
 

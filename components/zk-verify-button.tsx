@@ -8,11 +8,11 @@ import { useState } from "react"
 import { Button } from "./ui/button"
 import { ZKProofDialog } from "@/components/zk-proof-dialog"
 import { Loader2 } from "lucide-react"
-import { CompactProof } from "@/lib/zk/midnight-client"
+import { ZKProof } from "@/lib/zk/snarkjs-client"
 
 interface ZKVerifyButtonProps {
     nftId?: string
-    onProofGenerated?: (proof: CompactProof) => void
+    onProofGenerated?: (proof: ZKProof) => void
     className?: string
 }
 
@@ -43,7 +43,7 @@ export function ZKVerifyButton({
                 ) : (
                     <>
                         <span className="mr-2">🌑</span>
-                        ZK Verify Access Key (Midnight)
+                        ZK Verify Access Key
                     </>
                 )}
             </Button>
@@ -52,7 +52,7 @@ export function ZKVerifyButton({
                 isOpen={isDialogOpen}
                 onClose={() => setIsDialogOpen(false)}
                 initialNftId={nftId}
-                onProofGenerated={(proof: CompactProof) => {
+                onProofGenerated={(proof: ZKProof) => {
                     setIsGenerating(false)
                     onProofGenerated?.(proof)
                 }}

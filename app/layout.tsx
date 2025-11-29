@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { Toaster } from "sonner"
 import { Providers } from "@/components/providers"
+import Script from "next/script"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -20,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <Providers>
           <Suspense fallback={null}>{children}</Suspense>
@@ -37,6 +38,7 @@ export default function RootLayout({
           />
           <Analytics />
         </Providers>
+        <Script src="/js/snarkjs.min.js" strategy="beforeInteractive" />
       </body>
     </html>
   )

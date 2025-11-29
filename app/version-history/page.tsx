@@ -12,8 +12,9 @@ import { Badge } from "@/components/ui/badge"
 import { getVersions, getAllPublished } from "@/lib/cardano/query"
 import { RegistryDatum } from "@/lib/cardano/types"
 import { ipfsToHttp } from "@/lib/ipfs"
-import { Search, ExternalLink, Package, FileCode, Loader2, Calendar, User } from "lucide-react"
+import { Search, ExternalLink, Package, FileCode, Loader2, Calendar, User, ShieldCheck } from "lucide-react"
 import { toast } from "sonner"
+import { snarkjsClient } from "@/lib/zk/snarkjs-client"
 
 export default function VersionHistoryPage() {
     const [searchName, setSearchName] = useState("")
@@ -21,6 +22,35 @@ export default function VersionHistoryPage() {
     const [versions, setVersions] = useState<RegistryDatum[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [hasSearched, setHasSearched] = useState(false)
+    const [isGeneratingProof, setIsGeneratingProof] = useState(false)
+
+    const handleGenerateProof = async () => {
+        setIsGeneratingProof(true)
+        try {
+            toast.info("Generating ZK Proof... This may take a moment.")
+            // Use dummy data for demonstration
+            const inputs = {
+                nftId: "123456789",
+                encryptedCidHash: "abcdef123456789"
+            }
+
+            const result = await snarkjsClient.generateOwnershipProof(inputs)
+            console.log("Proof generated:", result)
+
+            const isValid = await snarkjsClient.verifyProof(result.proof, result.publicSignals)
+
+            if (isValid) {
+                toast.success("ZK Proof Generated & Verified Successfully!")
+            } else {
+                toast.error("Proof verification failed")
+            }
+        } catch (error) {
+            console.error("ZK Proof error:", error)
+            toast.error("Failed to generate ZK proof")
+        } finally {
+            setIsGeneratingProof(false)
+        }
+    }
 
     const handleSearch = async () => {
         if (!searchName.trim()) {
@@ -118,6 +148,25 @@ export default function VersionHistoryPage() {
                             Browse published contracts and packages on Cardano
                         </motion.p>
                     </div>
+                    {/* ZK Proof Test Button */}
+                    <Button
+                        onClick={handleGenerateProof}
+                        disabled={isGeneratingProof}
+                        variant="outline"
+                        className="border-purple-500/50 text-purple-300 hover:bg-purple-500/10"
+                    >
+                        {isGeneratingProof ? (
+                            <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Generating Proof...
+                            </>
+                        ) : (
+                            <>
+                                <ShieldCheck className="w-4 h-4 mr-2" />
+                                Test ZK Proof
+                            </>
+                        )}
+                    </Button>
                 </header>
 
                 {/* Main content */}
@@ -256,30 +305,31 @@ export default function VersionHistoryPage() {
                                                                         <span>{formatDate(version.timestamp)}</span>
                                                                     </div>
                                                                 </div>
+                                                            </div>
 
-                                                                <div className="flex flex-wrap gap-2">
-                                                                    <a
-                                                                        href={ipfsToHttp(version.sourceCID)}
-                                                                        target="_blank"
-                                                                        rel="noopener noreferrer"
-                                                                        className="text-sm text-purple-400 hover:text-purple-300 flex items-center gap-1"
-                                                                    >
-                                                                        📦 Source IPFS
-                                                                        <ExternalLink className="w-3 h-3" />
-                                                                    </a>
-                                                                    <span className="text-slate-600">•</span>
-                                                                    <a
-                                                                        href={ipfsToHttp(version.metadataCID)}
-                                                                        target="_blank"
-                                                                        rel="noopener noreferrer"
-                                                                        className="text-sm text-purple-400 hover:text-purple-300 flex items-center gap-1"
-                                                                    >
-                                                                        📄 Metadata IPFS
-                                                                        <ExternalLink className="w-3 h-3" />
-                                                                    </a>
-                                                                </div>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                <a
+                                                                    href={ipfsToHttp(version.sourceCID)}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-sm text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                                                                >
+                                                                    📦 Source IPFS
+                                                                    <ExternalLink className="w-3 h-3" />
+                                                                </a>
+                                                                <span className="text-slate-600">•</span>
+                                                                <a
+                                                                    href={ipfsToHttp(version.metadataCID)}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-sm text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                                                                >
+                                                                    📄 Metadata IPFS
+                                                                    <ExternalLink className="w-3 h-3" />
+                                                                </a>
                                                             </div>
                                                         </div>
+
                                                     </Card>
                                                 </motion.div>
                                             ))}

@@ -43,6 +43,7 @@
     "clsx": "^2.1.0",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
+    "diff": "^8.0.2",
     "embla-carousel-react": "^8.6.0",
     "ffjavascript": "^0.2.60",
     "framer-motion": "^11.0.8",
@@ -56,7 +57,6 @@
     "react-dom": "^18",
     "react-resizable-panels": "^3.0.6",
     "recharts": "^3.5.1",
-    "snarkjs": "^0.7.0",
     "sonner": "^1.4.3",
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7",
@@ -64,6 +64,7 @@
     "vaul": "^1.1.2"
   },
   "devDependencies": {
+    "@types/diff": "^7.0.2",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
