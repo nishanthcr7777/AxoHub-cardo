@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ZKVerifyButton } from "@/components/zk-verify-button"
 import { Card } from "@/components/ui/card"
 import { Shield } from "lucide-react"
+import { WalletConnectButton } from "@/components/wallet-connect-button"
 
 export default function BrowseSourcesPage() {
   const [activeTab, setActiveTab] = useState("public")
@@ -44,6 +45,7 @@ export default function BrowseSourcesPage() {
                     : "Verify ownership with Midnight Zero-Knowledge proofs"}
               </motion.p>
             </div>
+            <WalletConnectButton />
           </header>
 
           {/* Main content */}

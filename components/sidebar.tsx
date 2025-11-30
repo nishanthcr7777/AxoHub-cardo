@@ -5,7 +5,11 @@ import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+<<<<<<< HEAD
 import { WalletConnectButton } from "@/components/wallet-connect-button"
+=======
+
+>>>>>>> origin/midhan
 
 const menuItems = [
   { href: "/", label: "Dashboard", icon: "🏠" },
@@ -107,6 +111,7 @@ export function Sidebar() {
           )
         })}
       </nav>
+<<<<<<< HEAD
 
       {/* Wallet Connection */}
       <div className="absolute bottom-6 left-4 right-4">
@@ -115,6 +120,8 @@ export function Sidebar() {
         </div>
         <WalletConnectButton />
       </div>
+=======
+>>>>>>> origin/midhan
     </motion.div>
   )
 }

@@ -5,6 +5,10 @@ import { Sidebar } from "@/components/sidebar"
 import { PackagesCards } from "@/components/packages-cards"
 import { SearchFilters } from "@/components/search-filters"
 import { FilterProvider } from "@/contexts/filter-context"
+<<<<<<< HEAD
+=======
+import { WalletConnectButton } from "@/components/wallet-connect-button"
+>>>>>>> origin/midhan
 
 export default function BrowsePackagesPage() {
   return (
@@ -32,6 +36,10 @@ export default function BrowsePackagesPage() {
                 Discover and manage smart contract packages
               </motion.p>
             </div>
+<<<<<<< HEAD
+=======
+            <WalletConnectButton />
+>>>>>>> origin/midhan
           </header>
 
           {/* Main content */}
