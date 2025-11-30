@@ -1,4 +1,4 @@
-# 🚀 Quick Start - Hydra Version Control (8 Hours)
+  # 🚀 Quick Start - Hydra Version Control (8 Hours)
 
 ## ⚡ Rapid Setup Checklist
 

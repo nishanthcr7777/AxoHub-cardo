@@ -9,6 +9,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  output: "standalone",
   webpack: (config) => {
     config.experiments = {
       ...config.experiments,
