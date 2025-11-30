@@ -200,7 +200,7 @@ ARCHITECTURE DIAGRAM
     ```bash
     npm run dev
     ```
-
+    please View SetupGuide.txt for instructions and api keys
 ---
 
 ## 🛡️ Security & Privacy
@@ -294,6 +294,8 @@ If you believe the future of Cardano is developer-first,
 The platform is not publicly hosted yet due to the technical complexity involved in the current setup
  AxoHub can be run locally using docker or  manual Hydra setup,  
 and the open-source repository contains everything required to deploy independently.
+
+View SetupGuide.txt for instructions and api keys
 
 ##Onchain proofs
 <img width="1767" height="632" alt="image" src="https://github.com/user-attachments/assets/7ae2cde4-b309-4364-805a-be21a7949267" />
