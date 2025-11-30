@@ -4,16 +4,10 @@ import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-<<<<<<< HEAD
-import { X, Copy, ExternalLink, Loader2 } from "lucide-react"
-import { ipfsToHttp } from "@/lib/ipfs"
-import { toast } from "sonner"
-=======
 import { X, Copy, ExternalLink, Loader2, File, FileCode, FileText } from "lucide-react"
 import { ipfsToHttp } from "@/lib/ipfs"
 import { toast } from "sonner"
 import JSZip from "jszip"
->>>>>>> origin/midhan
 
 interface SourceViewerModalProps {
     isOpen: boolean
@@ -22,24 +16,15 @@ interface SourceViewerModalProps {
     title: string
 }
 
-<<<<<<< HEAD
-=======
 interface ZipFile {
     name: string
     content: string
 }
 
->>>>>>> origin/midhan
 export function SourceViewerModal({ isOpen, onClose, sourceCID, title }: SourceViewerModalProps) {
     const [sourceCode, setSourceCode] = useState<string>("")
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string>("")
-<<<<<<< HEAD
-
-    const fetchSourceCode = async () => {
-        setIsLoading(true)
-        setError("")
-=======
     const [hasFetched, setHasFetched] = useState(false)
 
     // ZIP file state
@@ -73,7 +58,6 @@ export function SourceViewerModal({ isOpen, onClose, sourceCID, title }: SourceV
         setIsZipFile(false)
         setZipFiles([])
         setSelectedFile(null)
->>>>>>> origin/midhan
 
         try {
             const url = ipfsToHttp(sourceCID)
@@ -83,21 +67,6 @@ export function SourceViewerModal({ isOpen, onClose, sourceCID, title }: SourceV
                 throw new Error("Failed to fetch source code from IPFS")
             }
 
-<<<<<<< HEAD
-            const text = await response.text()
-
-            // Try to parse and pretty-print JSON
-            try {
-                const json = JSON.parse(text)
-                setSourceCode(JSON.stringify(json, null, 2))
-            } catch {
-                // Not JSON, display as-is
-                setSourceCode(text)
-            }
-        } catch (err: any) {
-            console.error("Error fetching source:", err)
-            setError(err.message || "Failed to load source code")
-=======
             const arrayBuffer = await response.arrayBuffer()
 
             // Check if it's a ZIP file (PK signature)
@@ -156,17 +125,12 @@ export function SourceViewerModal({ isOpen, onClose, sourceCID, title }: SourceV
                 setError(err.message || "Failed to load source code")
             }
             setHasFetched(true)
->>>>>>> origin/midhan
         } finally {
             setIsLoading(false)
         }
     }
 
     useEffect(() => {
-<<<<<<< HEAD
-        if (isOpen && !sourceCode && !isLoading) {
-            fetchSourceCode()
-=======
         // Reset state when modal opens with a new CID
         if (isOpen) {
             if (!hasFetched && !isLoading && !sourceCode && zipFiles.length === 0) {
@@ -180,14 +144,10 @@ export function SourceViewerModal({ isOpen, onClose, sourceCID, title }: SourceV
             setIsZipFile(false)
             setZipFiles([])
             setSelectedFile(null)
->>>>>>> origin/midhan
         }
     }, [isOpen, sourceCID])
 
     const handleCopy = () => {
-<<<<<<< HEAD
-        navigator.clipboard.writeText(sourceCode)
-=======
         let textToCopy = ""
 
         if (isZipFile && selectedFile) {
@@ -198,7 +158,6 @@ export function SourceViewerModal({ isOpen, onClose, sourceCID, title }: SourceV
         }
 
         navigator.clipboard.writeText(textToCopy)
->>>>>>> origin/midhan
         toast.success("Source code copied to clipboard")
     }
 
@@ -209,8 +168,6 @@ export function SourceViewerModal({ isOpen, onClose, sourceCID, title }: SourceV
         window.open(`https://app.pinata.cloud/pinmanager?search=${cid}`, '_blank')
     }
 
-<<<<<<< HEAD
-=======
     const getDisplayContent = () => {
         if (isZipFile && selectedFile) {
             const file = zipFiles.find(f => f.name === selectedFile)
@@ -219,7 +176,6 @@ export function SourceViewerModal({ isOpen, onClose, sourceCID, title }: SourceV
         return sourceCode
     }
 
->>>>>>> origin/midhan
     return (
         <AnimatePresence>
             {isOpen && (
@@ -235,23 +191,15 @@ export function SourceViewerModal({ isOpen, onClose, sourceCID, title }: SourceV
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.9, opacity: 0 }}
                         onClick={(e) => e.stopPropagation()}
-<<<<<<< HEAD
-                        className="w-full max-w-4xl max-h-[90vh] flex flex-col"
-=======
                         className="w-full max-w-6xl max-h-[90vh] flex flex-col"
->>>>>>> origin/midhan
                     >
                         <Card className="bg-slate-900/95 border-slate-700 flex flex-col h-full">
                             <div className="flex items-center justify-between p-6 border-b border-slate-700">
                                 <div>
                                     <h2 className="text-xl font-bold text-white">{title}</h2>
-<<<<<<< HEAD
-                                    <p className="text-sm text-slate-400 mt-1">Source Code Viewer</p>
-=======
                                     <p className="text-sm text-slate-400 mt-1">
                                         {isZipFile ? `Package Archive (${zipFiles.length} files)` : 'Source Code Viewer'}
                                     </p>
->>>>>>> origin/midhan
                                 </div>
                                 <Button
                                     onClick={onClose}
@@ -269,11 +217,7 @@ export function SourceViewerModal({ isOpen, onClose, sourceCID, title }: SourceV
                                     size="sm"
                                     variant="outline"
                                     className="border-slate-600 text-slate-300 hover:bg-slate-800"
-<<<<<<< HEAD
-                                    disabled={!sourceCode || isLoading}
-=======
                                     disabled={(!sourceCode && !selectedFile) || isLoading}
->>>>>>> origin/midhan
                                 >
                                     <Copy className="w-4 h-4 mr-2" />
                                     Copy
@@ -292,18 +236,10 @@ export function SourceViewerModal({ isOpen, onClose, sourceCID, title }: SourceV
                                 </div>
                             </div>
 
-<<<<<<< HEAD
-                            <div className="flex-1 overflow-auto p-6">
-                                {isLoading && (
-                                    <div className="flex items-center justify-center h-full">
-                                        <div className="text-center">
-                                            <Loader2 className="w-8 h-8 animate-spin text-purple-500 mx-auto mb-4" />
-                                            <p className="text-slate-400">Loading source code from IPFS...</p>
-=======
-                            <div className="flex-1 overflow-hidden flex">
+                            <div className="flex-1 overflow-hidden flex min-h-0">
                                 {/* File browser sidebar for ZIP files */}
                                 {isZipFile && zipFiles.length > 0 && (
-                                    <div className="w-64 border-r border-slate-700 overflow-y-auto bg-slate-950/50">
+                                    <div className="w-64 border-r border-slate-700 overflow-y-auto bg-slate-950/50 h-full flex-shrink-0">
                                         <div className="p-3">
                                             <p className="text-xs font-semibold text-slate-400 mb-2 uppercase">Files</p>
                                             <div className="space-y-1">
@@ -312,8 +248,8 @@ export function SourceViewerModal({ isOpen, onClose, sourceCID, title }: SourceV
                                                         key={file.name}
                                                         onClick={() => setSelectedFile(file.name)}
                                                         className={`w-full flex items-center gap-2 px-3 py-2 rounded text-sm transition-colors ${selectedFile === file.name
-                                                                ? 'bg-purple-600 text-white'
-                                                                : 'text-slate-300 hover:bg-slate-800'
+                                                            ? 'bg-purple-600 text-white'
+                                                            : 'text-slate-300 hover:bg-slate-800'
                                                             }`}
                                                     >
                                                         {getFileIcon(file.name)}
@@ -321,41 +257,10 @@ export function SourceViewerModal({ isOpen, onClose, sourceCID, title }: SourceV
                                                     </button>
                                                 ))}
                                             </div>
->>>>>>> origin/midhan
                                         </div>
                                     </div>
                                 )}
 
-<<<<<<< HEAD
-                                {error && (
-                                    <div className="flex items-center justify-center h-full">
-                                        <div className="text-center">
-                                            <p className="text-red-400 mb-4">❌ {error}</p>
-                                            <Button
-                                                onClick={fetchSourceCode}
-                                                variant="outline"
-                                                className="border-slate-600 text-slate-300"
-                                            >
-                                                Retry
-                                            </Button>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {!isLoading && !error && sourceCode && (
-                                    <div className="bg-slate-950/50 rounded-lg p-4 border border-slate-800">
-                                        <pre className="text-sm text-slate-300 font-mono whitespace-pre-wrap overflow-x-auto">
-                                            {sourceCode}
-                                        </pre>
-                                    </div>
-                                )}
-
-                                {!isLoading && !error && !sourceCode && (
-                                    <div className="flex items-center justify-center h-full">
-                                        <p className="text-slate-500">No source code available</p>
-                                    </div>
-                                )}
-=======
                                 {/* Content area */}
                                 <div className="flex-1 overflow-auto p-6">
                                     {isLoading && (
@@ -405,7 +310,6 @@ export function SourceViewerModal({ isOpen, onClose, sourceCID, title }: SourceV
                                         </div>
                                     )}
                                 </div>
->>>>>>> origin/midhan
                             </div>
                         </Card>
                     </motion.div>

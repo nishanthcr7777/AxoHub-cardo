@@ -32,14 +32,10 @@ export async function getAllPublished(walletAddress?: string): Promise<RegistryD
         }
 
         // Query transactions from wallet address
-        const baseUrl = `https://cardano-${network}.blockfrost.io/api/v0`
+        const baseUrl = `/api/blockfrost`
 
         // Get all transactions from this address
-        const txResponse = await fetch(`${baseUrl}/addresses/${walletAddress}/transactions?order=desc&count=100`, {
-            headers: {
-                'project_id': blockfrostApiKey
-            }
-        })
+        const txResponse = await fetch(`${baseUrl}/addresses/${walletAddress}/transactions?order=desc&count=100`)
 
         if (!txResponse.ok) {
             console.error("Failed to fetch transactions:", txResponse.status)
@@ -52,11 +48,7 @@ export async function getAllPublished(walletAddress?: string): Promise<RegistryD
         // Parse each transaction for registry metadata (label 721)
         for (const tx of transactions) {
             try {
-                const metadataResponse = await fetch(`${baseUrl}/txs/${tx.tx_hash}/metadata`, {
-                    headers: {
-                        'project_id': blockfrostApiKey
-                    }
-                })
+                const metadataResponse = await fetch(`${baseUrl}/txs/${tx.tx_hash}/metadata`)
 
                 if (!metadataResponse.ok) continue
 

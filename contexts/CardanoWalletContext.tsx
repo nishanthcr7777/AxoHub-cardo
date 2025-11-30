@@ -65,10 +65,10 @@ export function CardanoWalletProvider({ children }: { children: React.ReactNode 
             const { Lucid, Blockfrost } = lucidModule
             const lucidInstance = await Lucid.new(
                 new Blockfrost(
-                    `https://cardano-${network.toLowerCase()}.blockfrost.io/api/v0`,
+                    "/api/blockfrost",
                     blockfrostApiKey
                 ),
-                network
+                "Preprod" // Force Preprod to match the API key
             )
 
             setLucid(lucidInstance)

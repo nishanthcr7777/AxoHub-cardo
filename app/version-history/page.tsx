@@ -15,6 +15,7 @@ import { ipfsToHttp } from "@/lib/ipfs"
 import { Search, ExternalLink, Package, FileCode, Loader2, Calendar, User, ShieldCheck } from "lucide-react"
 import { toast } from "sonner"
 import { snarkjsClient } from "@/lib/zk/snarkjs-client"
+import { Header } from "@/components/header"
 
 export default function VersionHistoryPage() {
     const [searchName, setSearchName] = useState("")
@@ -129,45 +130,49 @@ export default function VersionHistoryPage() {
             <Sidebar />
 
             <div className="ml-64 min-h-screen">
+
+
+                // ... inside the component ...
+
                 {/* Header */}
-                <header className="flex items-center justify-between p-6 border-b border-white/10 backdrop-blur-sm bg-white/5">
-                    <div className="flex-1">
-                        <motion.h1
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="text-2xl font-bold text-white"
+                <Header
+                    actions={
+                        <Button
+                            onClick={handleGenerateProof}
+                            disabled={isGeneratingProof}
+                            variant="outline"
+                            className="border-purple-500/50 text-purple-300 hover:bg-purple-500/10"
                         >
-                            Version History
-                        </motion.h1>
-                        <motion.p
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.1 }}
-                            className="text-slate-400 mt-1"
-                        >
-                            Browse published contracts and packages on Cardano
-                        </motion.p>
-                    </div>
-                    {/* ZK Proof Test Button */}
-                    <Button
-                        onClick={handleGenerateProof}
-                        disabled={isGeneratingProof}
-                        variant="outline"
-                        className="border-purple-500/50 text-purple-300 hover:bg-purple-500/10"
+                            {isGeneratingProof ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    Generating Proof...
+                                </>
+                            ) : (
+                                <>
+                                    <ShieldCheck className="w-4 h-4 mr-2" />
+                                    Test ZK Proof
+                                </>
+                            )}
+                        </Button>
+                    }
+                >
+                    <motion.h1
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="text-2xl font-bold text-white"
                     >
-                        {isGeneratingProof ? (
-                            <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Generating Proof...
-                            </>
-                        ) : (
-                            <>
-                                <ShieldCheck className="w-4 h-4 mr-2" />
-                                Test ZK Proof
-                            </>
-                        )}
-                    </Button>
-                </header>
+                        Version History
+                    </motion.h1>
+                    <motion.p
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="text-slate-400 mt-1"
+                    >
+                        Browse published contracts and packages on Cardano
+                    </motion.p>
+                </Header>
 
                 {/* Main content */}
                 <main className="p-8">

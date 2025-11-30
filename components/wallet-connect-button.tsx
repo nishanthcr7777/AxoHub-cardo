@@ -59,6 +59,7 @@ export function WalletConnectButton() {
         connectWallet,
         disconnectWallet,
         availableWallets,
+        lucid,
     } = useCardanoWallet()
 
     const [open, setOpen] = useState(false)
@@ -192,14 +193,14 @@ export function WalletConnectButton() {
                                 <button
                                     key={wallet}
                                     onClick={() => handleConnect(wallet)}
-                                    disabled={isConnecting}
+                                    disabled={isConnecting || !lucid}
                                     className="w-full flex items-center gap-4 p-4 rounded-lg border border-white/10 hover:bg-white/5 hover:border-purple-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <span className="text-3xl">{info.icon}</span>
                                     <div className="flex-1 text-left">
                                         <p className="font-semibold text-white">{info.name}</p>
                                         <p className="text-xs text-slate-400">
-                                            {isConnecting ? "Connecting..." : "Click to connect"}
+                                            {isConnecting ? "Connecting..." : !lucid ? "Initializing..." : "Click to connect"}
                                         </p>
                                     </div>
                                     {isConnecting && (

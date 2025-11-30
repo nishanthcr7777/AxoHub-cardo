@@ -3,10 +3,7 @@
 import { motion } from "framer-motion"
 import { Sidebar } from "@/components/sidebar"
 import { TypingHeader } from "@/components/typing-header"
-<<<<<<< HEAD
-=======
-import { WalletConnectButton } from "@/components/wallet-connect-button"
->>>>>>> origin/midhan
+import { Header } from "@/components/header"
 
 export default function HomePage() {
   return (
@@ -15,13 +12,7 @@ export default function HomePage() {
 
       <div className="ml-64 min-h-screen">
         {/* Header */}
-        <header className="flex items-center justify-between p-6 border-b border-white/10 backdrop-blur-sm bg-white/5">
-          <div className="flex-1" />
-<<<<<<< HEAD
-=======
-          <WalletConnectButton />
->>>>>>> origin/midhan
-        </header>
+        <Header />
 
         {/* Main content */}
         <main className="p-8">

@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ZKVerifyButton } from "@/components/zk-verify-button"
 import { Card } from "@/components/ui/card"
 import { Shield } from "lucide-react"
-import { WalletConnectButton } from "@/components/wallet-connect-button"
+import { Header } from "@/components/header"
 
 export default function BrowseSourcesPage() {
   const [activeTab, setActiveTab] = useState("public")
@@ -23,30 +23,27 @@ export default function BrowseSourcesPage() {
 
         <div className="ml-64 min-h-screen">
           {/* Header */}
-          <header className="flex items-center justify-between p-6 border-b border-white/10 backdrop-blur-sm bg-white/5">
-            <div className="flex-1">
-              <motion.h1
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="text-2xl font-bold text-white"
-              >
-                Browse Sources
-              </motion.h1>
-              <motion.p
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 }}
-                className="text-slate-400 mt-1"
-              >
-                {activeTab === "public"
-                  ? "Explore published smart contracts on Cardano"
-                  : activeTab === "private"
-                    ? "Unlock private source code with your NFT access key"
-                    : "Verify ownership with Midnight Zero-Knowledge proofs"}
-              </motion.p>
-            </div>
-            <WalletConnectButton />
-          </header>
+          <Header>
+            <motion.h1
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="text-2xl font-bold text-white"
+            >
+              Browse Sources
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-slate-400 mt-1"
+            >
+              {activeTab === "public"
+                ? "Explore published smart contracts on Cardano"
+                : activeTab === "private"
+                  ? "Unlock private source code with your NFT access key"
+                  : "Verify ownership with Midnight Zero-Knowledge proofs"}
+            </motion.p>
+          </Header>
 
           {/* Main content */}
           <main className="p-8">

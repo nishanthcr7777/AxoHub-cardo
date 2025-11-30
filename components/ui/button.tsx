@@ -35,45 +35,25 @@ const buttonVariants = cva(
   },
 )
 
-<<<<<<< HEAD
-function Button({
-  className,
-  variant,
-  size,
-  asChild = false,
-  ...props
-}: React.ComponentProps<'button'> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-  }) {
-=======
 const Button = React.forwardRef<
   HTMLButtonElement,
   React.ComponentProps<'button'> &
-    VariantProps<typeof buttonVariants> & {
-      asChild?: boolean
-    }
+  VariantProps<typeof buttonVariants> & {
+    asChild?: boolean
+  }
 >(({ className, variant, size, asChild = false, ...props }, ref) => {
->>>>>>> origin/midhan
   const Comp = asChild ? Slot : 'button'
 
   return (
     <Comp
-<<<<<<< HEAD
-=======
       ref={ref}
->>>>>>> origin/midhan
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
     />
   )
-<<<<<<< HEAD
-}
-=======
 })
 
 Button.displayName = 'Button'
->>>>>>> origin/midhan
 
 export { Button, buttonVariants }
