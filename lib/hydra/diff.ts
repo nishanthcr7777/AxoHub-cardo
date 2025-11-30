@@ -1,29 +1,38 @@
-import * as diff from 'diff';
-
 /**
- * Compute line-by-line diff between two strings
+ * Simple diff generator using diff library
  */
-export function computeDiff(oldText: string, newText: string): diff.Change[] {
-    return diff.diffLines(oldText, newText);
+import { diffLines } from 'diff'
+
+export function generateDiff(oldCode: string, newCode: string): string {
+    const changes = diffLines(oldCode, newCode)
+
+    let diff = ''
+    changes.forEach(change => {
+        const prefix = change.added ? '+' : change.removed ? '-' : ' '
+        const lines = change.value.split('\n')
+        lines.forEach(line => {
+            if (line) diff += `${prefix} ${line}\n`
+        })
+    })
+
+    return diff
 }
 
-/**
- * Format diff changes into a readable string
- */
-export function formatDiff(changes: diff.Change[]): string {
-    return changes.map((change: diff.Change) => {
-        const prefix = change.added ? '+ ' : change.removed ? '- ' : '  ';
-        // Handle multi-line values
-        if (change.value.endsWith('\n')) {
-            // Remove trailing newline for splitting to avoid empty last line
-            return change.value.slice(0, -1).split('\n').map((line: string) => {
-                return prefix + line;
-            }).join('\n') + '\n';
-        }
+export function calculateStats(diff: string): { added: number, removed: number } {
+    const lines = diff.split('\n')
+    return {
+        added: lines.filter(l => l.startsWith('+')).length,
+        removed: lines.filter(l => l.startsWith('-')).length
+    }
+}
 
-        return change.value.split('\n').map((line: string) => {
-            if (!line && change.value.length > 0) return ''; // Skip empty lines from split if not intended
-            return prefix + line;
-        }).join('\n');
-    }).join('');
+export function generateCommitHash(code: string): Promise<string> {
+    // Simple SHA-256 hash
+    const encoder = new TextEncoder()
+    const data = encoder.encode(code)
+    return crypto.subtle.digest('SHA-256', data)
+        .then(hash => {
+            const hashArray = Array.from(new Uint8Array(hash))
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+        })
 }
