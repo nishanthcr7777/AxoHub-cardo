@@ -1,0 +1,12 @@
+{
+  "name": "ownership",
+  "version": "1.0.0",
+  "description": "NFT ownership proof circuit",
+  "author": "AxoHub",
+  "license": "MIT",
+  "compiledAt": "2025-11-29T19:09:46.764Z",
+  "compiler": "compact-runtime",
+  "compilerVersion": "0.8.1",
+  "sourceFile": "contract\\ownership.compact",
+  "sourceHash": "dc287b1263d4227d84a3f3a24e2f442936bf057f29c387b1fe64443f3653e2da"
+}
