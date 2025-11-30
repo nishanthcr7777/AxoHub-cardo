@@ -19,6 +19,7 @@ interface CardanoWalletContextType {
     disconnectWallet: () => void
     switchNetwork: (network: CardanoNetwork) => Promise<void>
     availableWallets: WalletName[]
+    initializationError: string | null
 }
 
 const CardanoWalletContext = createContext<CardanoWalletContextType | undefined>(undefined)
@@ -34,6 +35,7 @@ export function CardanoWalletProvider({ children }: { children: React.ReactNode 
     const [lucid, setLucid] = useState<any | null>(null)
     const [availableWallets, setAvailableWallets] = useState<WalletName[]>([])
     const [lucidLoaded, setLucidLoaded] = useState(false)
+    const [initializationError, setInitializationError] = useState<string | null>(null)
 
     // Dynamically import Lucid only on client side
     useEffect(() => {
@@ -63,17 +65,27 @@ export function CardanoWalletProvider({ children }: { children: React.ReactNode 
             }
 
             const { Lucid, Blockfrost } = lucidModule
-            const lucidInstance = await Lucid.new(
-                new Blockfrost(
-                    "/api/blockfrost",
-                    blockfrostApiKey
-                ),
-                "Preprod" // Force Preprod to match the API key
-            )
+            let lucidInstance;
+            try {
+                lucidInstance = await Lucid.new(
+                    new Blockfrost(
+                        "https://cardano-preprod.blockfrost.io/api/v0",
+                        blockfrostApiKey
+                    ),
+                    "Preprod"
+                )
+            } catch (err) {
+                console.warn("Blockfrost initialization failed, falling back to wallet-only mode:", err)
+                // Fallback: Initialize without provider (allows wallet connection but no independent querying)
+                lucidInstance = await Lucid.new(undefined, "Preprod")
+                setInitializationError("Limited Mode: Blockfrost connection failed. You can still connect your wallet.")
+            }
 
             setLucid(lucidInstance)
-        } catch (error) {
+            if (!initializationError) setInitializationError(null)
+        } catch (error: any) {
             console.error("Failed to initialize Lucid:", error)
+            setInitializationError(error.message || "Failed to initialize Cardano library")
         }
     }
 
@@ -162,6 +174,7 @@ export function CardanoWalletProvider({ children }: { children: React.ReactNode 
                 disconnectWallet,
                 switchNetwork,
                 availableWallets,
+                initializationError,
             }}
         >
             {children}

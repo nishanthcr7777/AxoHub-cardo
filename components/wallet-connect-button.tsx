@@ -60,6 +60,7 @@ export function WalletConnectButton() {
         disconnectWallet,
         availableWallets,
         lucid,
+        initializationError,
     } = useCardanoWallet()
 
     const [open, setOpen] = useState(false)
@@ -200,8 +201,15 @@ export function WalletConnectButton() {
                                     <div className="flex-1 text-left">
                                         <p className="font-semibold text-white">{info.name}</p>
                                         <p className="text-xs text-slate-400">
-                                            {isConnecting ? "Connecting..." : !lucid ? "Initializing..." : "Click to connect"}
+                                            {isConnecting ? "Connecting..." :
+                                                initializationError ? "Connection Error" :
+                                                    !lucid ? "Initializing..." : "Click to connect"}
                                         </p>
+                                        {initializationError && (
+                                            <p className="text-[10px] text-red-400 mt-1 truncate max-w-[200px]" title={initializationError}>
+                                                {initializationError}
+                                            </p>
+                                        )}
                                     </div>
                                     {isConnecting && (
                                         <div className="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
