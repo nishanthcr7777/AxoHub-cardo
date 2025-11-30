@@ -295,6 +295,15 @@ The platform is not publicly hosted yet due to the technical complexity involved
  AxoHub can be run locally using docker or  manual Hydra setup,  
 and the open-source repository contains everything required to deploy independently.
 
+##Onchain proofs
+<img width="1767" height="632" alt="image" src="https://github.com/user-attachments/assets/7ae2cde4-b309-4364-805a-be21a7949267" />
+<img width="632" height="1077" alt="image" src="https://github.com/user-attachments/assets/2909ec2d-eff1-431e-9f1b-3a45e9a54b69" />
+<img width="1918" height="966" alt="image" src="https://github.com/user-attachments/assets/10f974ce-08f1-4c20-99b5-c3b259fec993" />
+<img width="1501" height="892" alt="image" src="https://github.com/user-attachments/assets/9079e90f-05e0-40fa-96f2-85ce520e25a4" />
+![WhatsApp Image 2025-11-28 at 10 58 09_b5c8d57f](https://github.com/user-attachments/assets/103141f9-061e-4442-ab8f-d5c3c62dd3fb)
+
+
+
 
 **Built with ❤️ by the AxoHub Team**
 *Pushing the boundaries of what's possible on Cardano.*
