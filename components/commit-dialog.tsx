@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -35,6 +35,9 @@ export function CommitDialog({ isOpen, onClose, onCommit, stats, isCommitting = 
                         <GitCommit className="w-5 h-5 text-purple-500" />
                         Commit to Hydra
                     </DialogTitle>
+                    <DialogDescription>
+                        Review your changes and commit them to the Hydra Head.
+                    </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-4 py-4">

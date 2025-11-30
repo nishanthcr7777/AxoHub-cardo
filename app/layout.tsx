@@ -27,7 +27,7 @@ export default function RootLayout({
           <Suspense fallback={null}>{children}</Suspense>
           <Toaster
             theme="dark"
-            position="top-right"
+            position="bottom-right"
             toastOptions={{
               style: {
                 background: "rgba(0, 0, 0, 0.8)",

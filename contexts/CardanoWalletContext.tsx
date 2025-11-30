@@ -83,9 +83,19 @@ export function CardanoWalletProvider({ children }: { children: React.ReactNode 
 
             setLucid(lucidInstance)
             if (!initializationError) setInitializationError(null)
+
+            // Verify connection
+            try {
+                const protocolParams = await lucidInstance.provider.getProtocolParameters()
+                console.log("Blockfrost connection verified. Protocol params fetched:", protocolParams)
+            } catch (e) {
+                console.warn("Failed to fetch protocol parameters from Blockfrost:", e)
+                setInitializationError("Blockfrost connection failed. Please check your API key and network.")
+            }
         } catch (error: any) {
             console.error("Failed to initialize Lucid:", error)
             setInitializationError(error.message || "Failed to initialize Cardano library")
+            console.error("Full Lucid initialization error:", error)
         }
     }
 
