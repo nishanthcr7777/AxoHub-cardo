@@ -1,4 +1,4 @@
-# AxoHub-BCH 🚀
+# AxoHub 🚀
 > **The Future of Decentralized Version Control on Cardano**
 
 ![Status](https://img.shields.io/badge/Status-Beta-blue)
@@ -7,7 +7,7 @@
 ![Hydra](https://img.shields.io/badge/L2-Hydra%20Head-orange)
 ![ZK](https://img.shields.io/badge/Privacy-zkSNARKs-black)
 
-**AxoHub-BCH** is a revolutionary, decentralized code collaboration platform built on the **Cardano** blockchain. It leverages **Hydra Heads** for instant, zero-fee code commits and **Zero-Knowledge Proofs (zk-SNARKs)** for privacy-preserving ownership verification.
+**AxoHub** is a revolutionary, decentralized code collaboration platform built on the **Cardano** blockchain. It leverages **Hydra Heads** for instant, zero-fee code commits and **Zero-Knowledge Proofs (zk-SNARKs)** for privacy-preserving ownership verification.
 
 Think of it as **"Git on Blockchain"**—but faster, cheaper, and private.
 
