@@ -137,6 +137,7 @@ export default function VersionHistoryPage() {
 
                 // Optimistically set to open or wait for event?
                 setHydraStatus("open")
+                setIsEditing(true) // Enable editor
             } else {
                 toast.error("Head is not ready. Please Start Editing first.")
                 return
@@ -157,8 +158,24 @@ export default function VersionHistoryPage() {
         toast.loading("Closing Hydra Head and Pushing to L1...")
 
         try {
-            // Close Hydra Head and settle on L1
+            // 1. Close Hydra Head (Mock)
             await hydraClient.closeAndSettle()
+
+            // 2. Trigger REAL Wallet Transaction (L1 Settlement)
+            if (lucid && isConnected) {
+                toast.loading("Please sign the L1 Settlement transaction...")
+
+                const address = await lucid.wallet.address()
+                const tx = await lucid.newTx()
+                    .payToAddress(address, { lovelace: BigInt(1000000) }) // Self-transfer min ADA
+                    .attachMetadata(674, { msg: "AxoHub: Hydra Settlement", commits: commits.length })
+                    .complete()
+
+                const signedTx = await tx.sign().complete()
+                const txHash = await signedTx.submit()
+
+                toast.success(`Settlement TX Submitted: ${txHash.slice(0, 10)}...`)
+            }
 
             // Mark commits as pushed
             setCommits(commits.map(c => ({ ...c, status: "pushed_to_l1" })))
@@ -211,7 +228,7 @@ export default function VersionHistoryPage() {
                     </div>
 
                     <div className="flex gap-2">
-                        {!isEditing ? (
+                        {hydraStatus === 'idle' || hydraStatus === 'opening' ? (
                             <Button
                                 onClick={handleStartEditing}
                                 disabled={hydraStatus === "opening"}
@@ -228,11 +245,11 @@ export default function VersionHistoryPage() {
                             <>
                                 <Button
                                     onClick={handleCommit}
-                                    disabled={!hasChanges}
+                                    disabled={hydraStatus !== 'initializing' && !hasChanges}
                                     className="bg-purple-600 hover:bg-purple-700"
                                 >
                                     <GitCommit className="w-4 h-4 mr-2" />
-                                    Commit to Hydra
+                                    {hydraStatus === 'initializing' ? "Deposit to Hydra" : "Commit to Hydra"}
                                 </Button>
 
                                 <Button
@@ -284,7 +301,7 @@ export default function VersionHistoryPage() {
                                 <div className="rounded-lg overflow-hidden border border-slate-800 shadow-2xl">
                                     <CodeEditor
                                         value={code}
-                                        onChange={isEditing ? setCode : () => { }} // Read-only if not editing
+                                        onChange={setCode}
                                         language={editorLanguage}
                                     />
                                 </div>
