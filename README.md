@@ -115,15 +115,16 @@ Experience the speed of centralized git with the security of Cardano.
 
 AxoHub employs a **Hybrid L1/L2 Architecture** to maximize performance and security.
 
-```mermaid
-graph TD
-    User[Developer] -->|1. Deposit UTXO| L1[Cardano L1]
-    L1 -->|2. Open Head| Hydra[Hydra Head (L2)]
-    User -->|3. Instant Commits (NewTx)| Hydra
-    User -->|4. ZK Proof (Ownership)| Verifier[ZK Verifier]
-    Hydra -->|5. Batch Settle| L1
-    L1 -->|6. Permanent Storage| IPFS[IPFS / Arweave]
-```
+USER FLOW
+<img width="1665" height="607" alt="image" src="https://github.com/user-attachments/assets/2d9fb08f-6426-4346-bf8c-c4beaffdea54" />
+
+WIREFRAME
+<img width="1141" height="560" alt="image" src="https://github.com/user-attachments/assets/6797079f-db8b-4ee4-bdd2-889f18f48e20" />
+
+ARCHITECTURE DIAGRAM
+<img width="1158" height="503" alt="image" src="https://github.com/user-attachments/assets/36033298-e6fb-4c20-9871-b98adf750f35" />
+
+
 
 1.  **Hydra Client**: A custom WebSocket client (`lib/hydra/client.ts`) manages the complex state machine of Hydra Heads (Idle -> Initializing -> Open -> Closed).
 2.  **Smart Contracts**: Plutus V2 validators ensure secure governance and settlement.
@@ -203,6 +204,87 @@ We take security seriously.
 *   **Non-Custodial**: You always retain control of your keys and assets.
 *   **Auditable**: All smart contracts and circuits are open source.
 *   **ZK-Powered**: Your contribution rights are verified mathematically, not just by signature.
+
+## 🔮 Future Updates & Vision
+
+AxoHub is still early — but the long-term vision is far bigger than a package registry.  
+Our roadmap focuses on unlocking the **next decade of decentralized software development on Cardano.**
+
+---
+
+### 📌 Near-Term (Q1–Q2 2025)
+
+| Feature | Description |
+|--------|-------------|
+| **Hydra Multi-Head Support** | Allow projects to run isolated Hydra Heads for different teams & codebases. |
+| **Dependency Installer (`axo install`)** | CLI tool to integrate libraries directly into Plutus/Aiken builds. |
+| **Package Reputation System** | Trust scores based on verified contributions & zk-proof ownership. |
+| **Private Workspace Keys** | NFT-based cryptographic access tokens for secure, whitelisted repos. |
+| **Semantic Versioning on-chain** | Native Cardano version constraints & compatibility guarantees. |
+
+---
+
+### 📌 Mid-Term (Q3–Q4 2025)
+
+| Feature | Description |
+|--------|-------------|
+| **AxoHub CLI** | Push commits, manage repos, publish packages, interact with Hydra from terminal. |
+| **Epic Search Engine** | Query packages by category, language, contributor, security score & license. |
+| **DAO Governance for Registry** | Community voting for code disputes, package flags & visibility rules. |
+| **Gasless Smart Contract Execution (via Hydra L2)** | Execute Plutus contract simulations inside Hydra before L1 settlement. |
+| **On-Chain Audits** | Security firms publish signed audit reports directly into package metadata. |
+
+---
+
+### 📌 Long-Term (2026+)
+
+| Vision | Description |
+|--------|-------------|
+| **Cardano Developer Identity Layer** | Cross-project profile: badges, contributions, skills & zk-verified authorship. |
+| **Universal Package Index for Web3** | Bridge registries for Aiken, Solidity, Rust, TypeScript, Cairo, Move & more. |
+| **AI-Powered Code Assistant for Cardano** | AI trained on verified Cardano libraries to assist smart contract development. |
+| **Completely Decentralized Build System** | Hydra-based distributed compilation with deterministic reproducibility. |
+| **Enterprise Subscription Layer** | Private Hydra heads, encrypted repos, SLAs & on-prem deployment for institutions. |
+
+---
+
+## 🚀 What AxoHub Ultimately Becomes
+
+Not just a registry.  
+Not just a git alternative.  
+Not just a ZK privacy layer.
+
+AxoHub becomes the **developer backbone of the Cardano economy** —  
+an open, trustless, privacy-preserving platform where **smart contracts, packages, developers, identities, and contributions live permanently and transparently without centralized control.**
+
+Every successful Cardano project — wallets, DEXs, DAOs, NFT platforms, GameFi — will rely on the libraries, contracts, identity and tooling emerging from AxoHub.
+
+Cardano becomes the first blockchain ecosystem where:
+
+| Value | Realized Through AxoHub |
+|-------|--------------------------|
+| 💡 Developer identity is immutable | On-chain / ZK authorship |
+| 📦 Packages are decentralized | Open registry |
+| 🛠 Collaboration is trustless | Hydra + cryptography |
+| ⚡ Scaling is built-in | Hydra L2 commits |
+| 🔏 Privacy is optional | ZK modes |
+| 🧠 Ownership is provable | SNARK-backed signatures |
+
+---
+
+## 🤝 Join the Journey
+
+AxoHub is more than software — **it’s a movement.**  
+Whether you’re a **Plutus engineer, Aiken developer, Hydra expert, ZK researcher, designer, or just Cardano-curious**:
+
+> **You belong here.**
+
+🌐 **Website:** Coming soon  
+💬 **Discord:** Coming soon  
+🧪 **Beta Test:** Q1 2025
+
+If you believe the future of Cardano is developer-first,  
+**you’re already part of the mission.**
 
 
 
