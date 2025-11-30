@@ -1,4 +1,4 @@
-# AxoHub-BCH 🚀
+# AxoHub 🚀
 > **The Future of Decentralized Version Control on Cardano**
 
 ![Status](https://img.shields.io/badge/Status-Beta-blue)
@@ -7,7 +7,7 @@
 ![Hydra](https://img.shields.io/badge/L2-Hydra%20Head-orange)
 ![ZK](https://img.shields.io/badge/Privacy-zkSNARKs-black)
 
-**AxoHub-BCH** is a revolutionary, decentralized code collaboration platform built on the **Cardano** blockchain. It leverages **Hydra Heads** for instant, zero-fee code commits and **Zero-Knowledge Proofs (zk-SNARKs)** for privacy-preserving ownership verification.
+**AxoHub** is a revolutionary, decentralized code collaboration platform built on the **Cardano** blockchain. It leverages **Hydra Heads** for instant, zero-fee code commits and **Zero-Knowledge Proofs (zk-SNARKs)** for privacy-preserving ownership verification.
 
 Think of it as **"Git on Blockchain"**—but faster, cheaper, and private.
 
@@ -142,6 +142,11 @@ ARCHITECTURE DIAGRAM
 
 ---
 
+##Wallet addresses and txn addresses made:
+
+**Wallet** stake_test1uz0gwqv23k2kysedp2rldsqa6hg0c5xn3af7w579q38m0jql5yzku
+**txn** 9166deccd1cc493522509704a5f9f3344f110a501723783caf2ced1feca2c668 , https://preprod.cardanoscan.io/transaction/9166deccd1cc493522509704a5f9f3344f110a501723783caf2ced1feca2c668?tab=metadata
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -195,7 +200,7 @@ ARCHITECTURE DIAGRAM
     ```bash
     npm run dev
     ```
-
+    please View SetupGuide.txt for instructions and api keys
 ---
 
 ## 🛡️ Security & Privacy
@@ -285,6 +290,20 @@ Whether you’re a **Plutus engineer, Aiken developer, Hydra expert, ZK research
 
 If you believe the future of Cardano is developer-first,  
 **you’re already part of the mission.**
+
+The platform is not publicly hosted yet due to the technical complexity involved in the current setup
+ AxoHub can be run locally using docker or  manual Hydra setup,  
+and the open-source repository contains everything required to deploy independently.
+
+View SetupGuide.txt for instructions and api keys
+
+##Onchain proofs
+<img width="1767" height="632" alt="image" src="https://github.com/user-attachments/assets/7ae2cde4-b309-4364-805a-be21a7949267" />
+<img width="632" height="1077" alt="image" src="https://github.com/user-attachments/assets/2909ec2d-eff1-431e-9f1b-3a45e9a54b69" />
+<img width="1918" height="966" alt="image" src="https://github.com/user-attachments/assets/10f974ce-08f1-4c20-99b5-c3b259fec993" />
+<img width="1501" height="892" alt="image" src="https://github.com/user-attachments/assets/9079e90f-05e0-40fa-96f2-85ce520e25a4" />
+![WhatsApp Image 2025-11-28 at 10 58 09_b5c8d57f](https://github.com/user-attachments/assets/103141f9-061e-4442-ab8f-d5c3c62dd3fb)
+
 
 
 
