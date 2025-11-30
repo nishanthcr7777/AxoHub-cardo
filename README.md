@@ -142,6 +142,11 @@ ARCHITECTURE DIAGRAM
 
 ---
 
+##Wallet addresses and txn addresses made:
+
+**Wallet** stake_test1uz0gwqv23k2kysedp2rldsqa6hg0c5xn3af7w579q38m0jql5yzku
+**txn** 9166deccd1cc493522509704a5f9f3344f110a501723783caf2ced1feca2c668 , https://preprod.cardanoscan.io/transaction/9166deccd1cc493522509704a5f9f3344f110a501723783caf2ced1feca2c668?tab=metadata
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -286,6 +291,9 @@ Whether you’re a **Plutus engineer, Aiken developer, Hydra expert, ZK research
 If you believe the future of Cardano is developer-first,  
 **you’re already part of the mission.**
 
+The platform is not publicly hosted yet due to the technical complexity involved in the current setup
+ AxoHub can be run locally using docker or  manual Hydra setup,  
+and the open-source repository contains everything required to deploy independently.
 
 
 **Built with ❤️ by the AxoHub Team**
