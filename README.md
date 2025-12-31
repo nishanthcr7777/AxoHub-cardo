@@ -17,7 +17,7 @@ Think of it as **"Git on Blockchain"**—but faster, cheaper, and private.
 ### 🥇 Winner — Web3Conf25 Hackathon
 > **Event:** Web3Conf25 × GirlScript  
 > **Achievement:** Winner    
-> 🔗 https://www.linkedin.com/posts/prithivr-tech_hackathon-web3conf-girlscript-ugcPost-7395483973075775488-BSou
+> 🔗 [https://www.linkedin.com/posts/chennai-institute-of-technology_cit-hackweb3conf2025](https://www.linkedin.com/posts/chennai-institute-of-technology_cit-hackweb3conf2025-indiablockchainmonth-activity-7395044880181424128-1z-1?utm_source=share&utm_medium=member_desktop&rcm=ACoAAFLCBcwB8OCifkEDtd7TsC0QSjnQWswXRsM)
 
 ---
 
