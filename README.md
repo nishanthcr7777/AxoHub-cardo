@@ -12,8 +12,23 @@
 Think of it as **"Git on Blockchain"**—but faster, cheaper, and private.
 
 ---
+## 🏆 Recognition & Achievements
 
-## 🌍 Why AxoHub is a Game Changer for Cardano
+### 🥇 Winner — Web3Conf25 Hackathon
+> **Event:** Web3Conf25 × GirlScript  
+> **Achievement:** Winner    
+> 🔗 https://www.linkedin.com/posts/prithivr-tech_hackathon-web3conf-girlscript-ugcPost-7395483973075775488-BSou
+
+---
+
+### 🏅 Top 5 Finalist — Cardano Hackathon (IBW Edition)
+> **Event:** India Blockchain Week – Cardano Hackathon  
+> **Achievement:** Top 5 Finalist    
+> 🔗 https://www.linkedin.com/posts/n1shanth_cardano-hackathon-ibw2025-activity-7401539805098278912-9_qI
+
+
+
+## 🌍 Why AxoHub is a Game Changer for Web3 ecosystem
 
 ### 1. Cardano has no developer hub — AxoHub becomes the “GitHub of Cardano.”
 Today, Cardano developers store code on centralized GitHub, private Google Drive, or scattered repos with no on-chain verification and no Cardano-native package manager.
@@ -210,6 +225,7 @@ We take security seriously.
 *   **Auditable**: All smart contracts and circuits are open source.
 *   **ZK-Powered**: Your contribution rights are verified mathematically, not just by signature.
 
+
 ## 🔮 Future Updates & Vision
 
 AxoHub is still early — but the long-term vision is far bigger than a package registry.  
@@ -284,8 +300,8 @@ Whether you’re a **Plutus engineer, Aiken developer, Hydra expert, ZK research
 
 > **You belong here.**
 
-🌐 **Website:** Coming soon  
-💬 **Discord:** Coming soon  
+🌐 **Website:** https://axo-hub.vercel.app/  
+💬 **Demo** https://www.youtube.com/watch?v=0YibaYk-2Gk  (ETH-MCP version)
 🧪 **Beta Test:** Q1 2025
 
 If you believe the future of Cardano is developer-first,  
@@ -309,3 +325,4 @@ View SetupGuide.txt for instructions and api keys
 
 **Built with ❤️ by the AxoHub Team**
 *Pushing the boundaries of what's possible on Cardano.*
+
